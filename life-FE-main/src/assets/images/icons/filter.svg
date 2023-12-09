@@ -1,0 +1,16 @@
+<svg id="filter" xmlns="http://www.w3.org/2000/svg" width="21.744" height="22.935" viewBox="0 0 21.744 22.935">
+  <g id="Grupo_8716" data-name="Grupo 8716">
+    <rect id="Retângulo_4511" data-name="Retângulo 4511" width="21.744" height="3.106" rx="1.553" transform="translate(0 1.734)" fill="#656453"/>
+    <circle id="Elipse_417" data-name="Elipse 417" cx="3.087" cy="3.087" r="3.087" transform="translate(3.374)" fill="#656453"/>
+  </g>
+  <g id="Grupo_8717" data-name="Grupo 8717" transform="translate(0 16.76)">
+    <rect id="Retângulo_4512" data-name="Retângulo 4512" width="21.744" height="3.106" rx="1.553" transform="translate(0 1.541)" fill="#656453"/>
+    <circle id="Elipse_418" data-name="Elipse 418" cx="3.087" cy="3.087" r="3.087" transform="translate(3.374 0)" fill="#656453"/>
+  </g>
+  <g id="Grupo_8719" data-name="Grupo 8719" transform="translate(0 7.939)">
+    <g id="Grupo_8718" data-name="Grupo 8718" transform="translate(0 0)">
+      <rect id="Retângulo_4513" data-name="Retângulo 4513" width="21.744" height="3.106" rx="1.553" transform="translate(0 2.078)" fill="#656453"/>
+      <ellipse id="Elipse_419" data-name="Elipse 419" cx="3.087" cy="3.528" rx="3.087" ry="3.528" transform="translate(12.195)" fill="#656453"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,47 @@
+.acc_Head {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.cardHeader {
+    background-color: transparent !important;
+    padding: 0 !important;
+    border-radius: 20px !important;
+}
+
+.c_Card {
+    border-radius: 20px !important;
+    margin-bottom: 20PX !important;
+}
+
+.arrowdiv {
+    background-color: var(--color-gold);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.IoIosArrowDown{
+    color: #fff;
+}
+
+.c_accordation{
+    width: 70%;
+    margin: 0 auto;
+}
+
+/* responsive start */
+@media only screen and (max-width: 768px) {
+    .c_accordation{
+        width: 100%;
+    }
+}
+@media only screen and (max-width: 600px) {
+
+}
+/* responsive end */
