@@ -14,18 +14,18 @@
     "react-icons": "^4.3.1",
     "react-promise-tracker": "^2.1.0",
     "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^3.0.1",
     "react-toastify": "^9.0.5",
     "reactjs-popup": "^2.0.5",
     "redux": "^4.2.0",
     "redux-devtools-extension": "^2.13.9",
-    "swiper": "^8.1.4",
+    "swiper": "^8.4.7",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -47,7 +47,8 @@
     ]
   },
   "devDependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.6.2",
+    "react-app-rewired": "^2.2.1",
     "react-redux": "^8.0.2"
   }
 }

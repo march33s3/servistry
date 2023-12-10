@@ -1,3 +1,4 @@
+
 import React from 'react'
 // import Swiper core and required modules
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper';
@@ -5,10 +6,19 @@ import { Navigation, Pagination, Scrollbar, A11y } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/scrollbar';
+
+//import 'swiper/css'
+//import 'swiper/css/navigation';
+//import 'swiper/css/pagination';
+//import 'swiper/css/scrollbar';
+
+
+import 'swiper/swiper.min.css'
+import 'swiper/modules/pagination/pagination.min.css';
+import 'swiper/modules/navigation/navigation.min.css';
+import 'swiper/modules/scrollbar/scrollbar.min.css';
+//import 'swiper/modules/ally/ally.min.css';
+
 
 
 
