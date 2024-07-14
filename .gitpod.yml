@@ -9,19 +9,31 @@ image:
 
 tasks:
   - init: |
-      npm install && npm run build
+      # Install backend dependencies
+      cd backend
+      npm install
+      cd ..
+      # Install frontend dependencies
+      cd frontend
+      npm install
+      cd ..
+      # Set up MongoDB directories
       mkdir -p /workspace/data/db
       mkdir -p /workspace/data/log
-      mongod --dbpath /workspace/data/db --logpath /workspace/data/mongodb.log --fork
-    command: |
-      sleep 5 # wait for mongod to start
-      mongo --eval 'db.runCommand({ connectionStatus: 1 })'
-      npm run start
+      # Start MongoDB
+      mongod --dbpath /workspace/data/db --logpath /workspace/data/log/mongodb.log --fork
 
+    command: |
+      # Wait for MongoDB to start
+      sleep 5
+      # Start the backend
+      cd backend
+      npm start &
+      # Start the frontend
+      cd ../frontend
+      npm start
 ports:
   - port: 3000
     onOpen: open-preview
   - port: 27017
-    onOpen: open-preview
-
-
+    onOpen: ignore
