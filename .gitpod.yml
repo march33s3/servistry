@@ -11,12 +11,16 @@ tasks:
   - init: |
       npm install && npm run build
       mkdir -p /workspace/data/db
+      mkdir -p /workspace/data/log
       mongod --dbpath /workspace/data/db --logpath /workspace/data/mongodb.log --fork
     command: |
+      sleep 5 # wait for mongod to start
       mongo --eval 'db.runCommand({ connectionStatus: 1 })'
       npm run start
 
 ports:
+  - port: 3000
+    onOpen: open-preview
   - port: 27017
     onOpen: open-preview
 
