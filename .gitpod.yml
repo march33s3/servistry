@@ -10,10 +10,10 @@ image:
 tasks:
   - init: |
       npm install && npm run build
-      sudo service mongodb start
+      mkdir -p /workspace/data/db
+      mongod --dbpath /workspace/data/db --logpath /workspace/data/mongodb.log --fork
     command: |
       mongo --eval 'db.runCommand({ connectionStatus: 1 })'
-      mkdir -p /workspace/data && mongod --dbpath /workspace/data
       npm run start
 
 ports:
