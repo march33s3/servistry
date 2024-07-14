@@ -4,8 +4,20 @@
 
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
+image:
+  file: .gitpod.Dockerfile
+
 tasks:
-  - init: npm install && npm run build
-    command: npm run start
+  - init: |
+      npm install && npm run build
+      sudo service mongodb start
+    command: |
+      mongo --eval 'db.runCommand({ connectionStatus: 1 })'
+      mkdir -p /workspace/data && mongod --dbpath /workspace/data
+      npm run start
+
+ports:
+  - port: 27017
+    onOpen: open-preview
 
 
