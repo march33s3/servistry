@@ -112,8 +112,8 @@ function Registration() {
         setShow3('block')
         registrationObject.eventID = value
     }
-
-    // How they are feelingHow they are feeling start
+    
+    // How they are feeling start
 
     const handleExited = () => {
         setShow1('none')
@@ -305,7 +305,7 @@ function Registration() {
                     </div>
                 </Container>
             </div>
-            {/* How they are feelingHow they are feeling */}
+            {/* How they are feeling */}
 
             {/* Finish sign up */}
             <div style={{display: show4}}>
