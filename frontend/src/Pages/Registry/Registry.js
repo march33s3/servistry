@@ -57,14 +57,19 @@ function Registry() {
     const dispatch = useDispatch();
 
     // service call
+    // Function to handle the registry API call
     const doneRegistries = () => {
+        // Preparing the data to be sent in the API request
         let addRegistryData = addRegistryModal;
         addRegistryData.registryName = registryName;
         addRegistryData.feeling = feelingValue;
         addRegistryData.eventID = eventID;
         addRegistryData.image = imageRegistry;
         addRegistryData.token = token;
+
+        // trackPromise is used to handle loading state while the request is being made
         trackPromise(
+            // Making an HTTP POST request using axios
             axios({
                 method: "post",
                 headers: {
@@ -73,17 +78,25 @@ function Registry() {
                 url: 'https://afternoon-island-30959.herokuapp.com/user/registries',
                 data: JSON.stringify(addRegistryData)
             })
+                // Handling the successful response
                 .then(function (response) {
+                    // Checking if the response status and message indicate success
                     if (response.data.status === '200' && response.data.message === 'success') {
+                        // Retrieving the last registry item from the response data
                         let registry = response.data.data[response?.data?.data?.length - 1];
+                        // Dispatching an action to update the state with the selected registry
                         dispatch(selectedRegistryAction(registry));
+                        // Dispatching an action to update the user details with the new registries list
                         dispatch(setUserDetail({user: userDetailState?.user, registries: response?.data.data}));
+                        // Navigating to the /registry/services route
                         navigate('/registry/services')
                     }
                 })
+                // Handling any errors that occur during the request
                 .catch(function (error) {
+                    // Displaying an error message to the user
                     toastHandler(error.response.data.data);
-                })).then(r => console.log(r));
+                })).then(r => console.log(r));  // Logging the result of the trackPromise function (optional)
     }
     const addRegistryServiceHandler = () => {
         if (selectedRegistry?._id) {
@@ -93,8 +106,11 @@ function Registry() {
         }
     }
     // services api call
+    // Function to handle the services API call
     const servicesApiHandler = () => {
+        // trackPromise is used to handle loading state while the request is being made
         trackPromise(
+             // Making an HTTP GET request using axios
             axios({
                 method: "get",
                 headers: {
@@ -102,16 +118,21 @@ function Registry() {
                 },
                 url: 'https://afternoon-island-30959.herokuapp.com/service/',
             })
+                // Handling the successful response
                 .then(function (response) {
-
+                    // Checking if the response status and message indicate success
                     if (response.data.status === '200' && response.data.message === 'success') {
+                        // Dispatching an action to update the state with the received data
                         dispatch(getServices(response.data.data))
+                        // Navigating to the /addServices route
                         navigate("/addServices");
                     }
                 })
+                // Handling any errors that occur during the request
                 .catch(function (error) {
+                     // Displaying an error message to the user
                     toastHandler(error.response.data.data);
-                })).then(r => console.log(r));
+                })).then(r => console.log(r)); // Logging the result of the trackPromise function (optional)
     }
 
     // what even happend handle start
