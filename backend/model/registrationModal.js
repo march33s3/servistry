@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
 
 const RegistrationSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  firstandLastName: { type: String, required: true },
+  emailAddress: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  feeling: { type: String, required: true },
+  userType: { type: String, required: true },
+  eventID: { type: String, required: true },
+  promotionalOffersAndUpdates: { type: String, required: false },
+
 });
 
 module.exports = mongoose.model('Registration', RegistrationSchema);
