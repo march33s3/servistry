@@ -183,7 +183,7 @@ const Registration = () => {
         registrationObject.feeling = feelingValue
         try {
             const response = await trackPromise(
-            axios.post('https://5000-march33s3-servistry-zr4rzpjb7iq.ws-us115.gitpod.io/api/registration/add',registrationObject, {
+            axios.post('https://5000-march33s3-servistry-xpectls7szm.ws-us115.gitpod.io/api/registration/add',registrationObject, {
                 headers: {
                     "Content-Type": "application/json",
                 }
