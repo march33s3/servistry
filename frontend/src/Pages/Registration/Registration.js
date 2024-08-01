@@ -1,5 +1,17 @@
 import React, {useState} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {useDispatch} from "react-redux";
+import {Container} from 'react-bootstrap'
+import {trackPromise} from "react-promise-tracker";
+import axios from "axios";
+import {ToastContainer} from 'react-toastify';
+import {AiFillEye, AiFillLock} from 'react-icons/ai';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../Components/Header/Header'
+import {setUserDetail} from "../../store/action/user-detail-actions";
+import {toastHandler} from "../../Components/toaster";
+
+// Import images
 import icon1 from '../../assets/images/what_even_happend/icon1.png'
 import icon2 from '../../assets/images/what_even_happend/icon2.png'
 import icon3 from '../../assets/images/what_even_happend/icon3.png'
@@ -8,9 +20,6 @@ import icon5 from '../../assets/images/what_even_happend/icon5.png'
 import icon6 from '../../assets/images/what_even_happend/icon6.png'
 import icon7 from '../../assets/images/what_even_happend/icon7.png'
 import icon8 from '../../assets/images/what_even_happend/icon8.png'
-import {Container} from 'react-bootstrap'
-import {trackPromise} from "react-promise-tracker";
-import axios from "axios";
 import r_icon1 from '../../assets/images/what_even_happend/r_icon1.png'
 import r_icon2 from '../../assets/images/what_even_happend/r_icon2.png'
 import r_icon3 from '../../assets/images/what_even_happend/r_icon3.png'
@@ -22,19 +31,10 @@ import r_icon8 from '../../assets/images/what_even_happend/r_icon8.png'
 import ex_icon1 from '../../assets/images/what_even_happend/ex_icon1.png'
 import ex_icon2 from '../../assets/images/what_even_happend/ex_icon2.png'
 import ex_icon3 from '../../assets/images/what_even_happend/ex_icon3.png'
-import 'react-toastify/dist/ReactToastify.css';
-import {ToastContainer} from 'react-toastify';
-import {AiFillEye, AiFillLock} from 'react-icons/ai';
-import {useNavigate} from 'react-router-dom'
-//import registrationModal from "../../model/registrationModal";
-import {useDispatch} from "react-redux";
-import {setUserDetail} from "../../store/action/user-detail-actions";
-import {toastHandler} from "../../Components/toaster";
 
-function Registration() {
+const Registration = () => {
     let navigate = useNavigate();
     const dispatch = useDispatch();
-    const registrationObject = registrationModal;
     const [show1, setShow1] = useState('block')
     const [show2, setShow2] = useState('none')
     const [show3, setShow3] = useState('none')
@@ -44,7 +44,14 @@ function Registration() {
     const [feeltext, setFeeltext] = useState("")
     const [feelingValue, setFeelingValue] = useState("")
     const [feeltext2, setFeeltext2] = useState("")
-
+    const [registrationObject, setRegistrationObject] = useState({
+        userType: '',
+        firstandLastName: '',
+        emailAddress: '',
+        password: '',
+        promotionalOffersAndUpdates: false,
+    });
+    
     // what even happend handle start
 
     const handleBirth = () => {
