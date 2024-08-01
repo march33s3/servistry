@@ -7,9 +7,18 @@ const Registration = require('../models/registrationModal');
 router.post('/add', async (req, res) => {
     const { firstandLastName, emailAddress, password, feeling, userType, eventID, promotionalOffersAndUpdates } = req.body;
     try {
-      const newRegistration = new Registration({ firstandLastName, emailAddress, password, feeling, userType, eventID, promotionalOffersAndUpdates });
+      const newRegistration = new Registration({ 
+        firstandLastName, 
+        emailAddress, 
+        password, 
+        feeling, 
+        userType, 
+        eventID, 
+        promotionalOffersAndUpdates, 
+      });
       await newRegistration.save();
-      res.status(201).json(newRegistration);
+
+      res.status(201).json({ message: 'success', data: newRegistration });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
