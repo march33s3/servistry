@@ -51,7 +51,7 @@ const Registration = () => {
         password: '',
         promotionalOffersAndUpdates: false,
     });
-    
+
     // what even happend handle start
 
     const handleBirth = () => {
@@ -179,27 +179,28 @@ const Registration = () => {
     };
 
     // service call
-    const registrationService = () => {
+    const registrationService = async () => {
         registrationObject.feeling = feelingValue
-        trackPromise(
-            axios({
-                method: "post",
+        try {
+            const response = await trackPromise(
+            axios.post('http://localhost:5000/api/users/signup',registrationObject, {
                 headers: {
                     "Content-Type": "application/json",
-                },
-                url: 'https://afternoon-island-30959.herokuapp.com/user/signup',
-                data: JSON.stringify(registrationObject)
+                }
             })
-                .then(function (response) {
-                    if (response.status === 201 && response.data.message === 'success') {
-                        dispatch(setUserDetail(response.data.data))
-                        navigate("/profile");
-                    }
-                })
-                .catch(function (error) {
-                    toastHandler(error.response.data.data);
-                })).then(r => console.log(r));
+        );
+
+
+        if (response.status === 201 && response.data.message === 'success') {
+            dispatch(setUserDetail(response.data.data))
+            navigate("/profile");
+        }
+        
+    } catch (error) {
+            toastHandler(error.response?.data?.message || 'An error occurred during registration.');
     }
+
+};
 
     return (
         <div className='Registration'>

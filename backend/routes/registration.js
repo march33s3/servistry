@@ -1,7 +1,7 @@
 // routes/registration.js
 const express = require('express');
 const router = express.Router();
-const Registration = require('../models/registrationModal');
+const Registration = require('../model/registrationModal');
 
 // POST route to add a new user through registration
 router.post('/add', async (req, res) => {
