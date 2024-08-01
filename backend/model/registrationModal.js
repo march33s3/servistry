@@ -5,7 +5,7 @@ const RegistrationSchema = new mongoose.Schema({
   emailAddress: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   feeling: { type: String, required: true },
-  userType: { type: String, required: true },
+  userType: { type: String, required: false },
   eventID: { type: String, required: true },
   promotionalOffersAndUpdates: { type: String, required: false },
 
