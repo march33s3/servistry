@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(bodyParser.json());
-//app.use(express.json());
+app.use(express.json());
 //app.use(require("./routes/record"));
 
 app.use('/api/registration', registrationRoutes)
