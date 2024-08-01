@@ -26,7 +26,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import {ToastContainer} from 'react-toastify';
 import {AiFillEye, AiFillLock} from 'react-icons/ai';
 import {useNavigate} from 'react-router-dom'
-import registrationModal from "../../model/registrationModal";
+//import registrationModal from "../../model/registrationModal";
 import {useDispatch} from "react-redux";
 import {setUserDetail} from "../../store/action/user-detail-actions";
 import {toastHandler} from "../../Components/toaster";

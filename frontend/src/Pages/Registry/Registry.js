@@ -12,7 +12,7 @@ import axios from "axios";
 import {getServices} from "../../store/action/services-actions";
 import {toastHandler} from "../../Components/toaster";
 import {ToastContainer} from "react-toastify";
-import addRegistryModal from "../../model/addRegistryModal";
+//import addRegistryModal from "../../model/addRegistryModal";
 import {selectedRegistryAction} from "../../store/action/selected-registry-action";
 import {setUserDetail} from "../../store/action/user-detail-actions";
 import icon1 from "../../assets/images/what_even_happend/icon1.png";
@@ -60,12 +60,12 @@ function Registry() {
     // Function to handle the registry API call
     const doneRegistries = () => {
         // Preparing the data to be sent in the API request
-        let addRegistryData = addRegistryModal;
-        addRegistryData.registryName = registryName;
-        addRegistryData.feeling = feelingValue;
-        addRegistryData.eventID = eventID;
-        addRegistryData.image = imageRegistry;
-        addRegistryData.token = token;
+    //    let addRegistryData = addRegistryModal;
+    //    addRegistryData.registryName = registryName;
+    //    addRegistryData.feeling = feelingValue;
+    //    addRegistryData.eventID = eventID;
+    //    addRegistryData.image = imageRegistry;
+    //    addRegistryData.token = token;
 
         // trackPromise is used to handle loading state while the request is being made
         trackPromise(
@@ -76,7 +76,7 @@ function Registry() {
                     "Content-Type": "application/json",
                 },
                 url: 'https://afternoon-island-30959.herokuapp.com/user/registries',
-                data: JSON.stringify(addRegistryData)
+        //        data: JSON.stringify(addRegistryData)
             })
                 // Handling the successful response
                 .then(function (response) {

@@ -1,7 +1,7 @@
 import React from "react";
 import logo from "../../assets/images/login_logo.png";
 import {Container} from "react-bootstrap";
-import loginModal from "../../model/loginModal";
+// import loginModal from "../../model/loginModal";
 import {trackPromise} from "react-promise-tracker";
 import axios from "axios";
 import {toastHandler} from "../../Components/toaster";
@@ -12,17 +12,17 @@ import Header from "../../Components/Header/Header";
 import {setTokenActions} from "../../store/action/setToken-actions";
 
 function Login() {
-    const loginObject = loginModal;
+//    const loginObject = loginModal;
     const dispatch = useDispatch();
     let navigate = useNavigate();
     // value change handler
     const loginInfo = (loginFormData) => {
         switch (loginFormData.target.name) {
             case "password":
-                loginObject.password = loginFormData.target.value
+//                loginObject.password = loginFormData.target.value
                 break;
             case "emailAddress":
-                loginObject.emailAddress = loginFormData.target.value
+//                loginObject.emailAddress = loginFormData.target.value
                 break;
         }
     };
@@ -36,7 +36,7 @@ function Login() {
                     "Content-Type": "application/json",
                 },
                 url: 'https://afternoon-island-30959.herokuapp.com/user/login',
-                data: JSON.stringify(loginObject)
+//                data: JSON.stringify(loginObject)
             })
                 .then(function (response) {
                     if (response.status === 200 && response.data.message === 'success') {
