@@ -7,7 +7,7 @@ const RegistrationSchema = new mongoose.Schema({
   feeling: { type: String, required: true },
   userType: { type: String, required: false },
   eventID: { type: String, required: true },
-  promotionalOffersAndUpdates: { type: String, required: false },
+  promotionalOffersAndUpdates: { type: Boolean },
 
 });
 
