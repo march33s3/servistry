@@ -39,7 +39,12 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-       <!-- Load config.js dynamically from the current workspace -->
-       <script src="/config.js"></script> <!-- Use a relative URL -->  
+    <script>
+      // Determine the backend URL dynamically
+      const backendUrl = window.location.origin.replace("3000", "5000"); // Change the port from 3000 to 5000 for Gitpod
+      const script = document.createElement("script");
+      script.src = `${backendUrl}/config.js`;
+      document.head.appendChild(script);
+    </script>
   </body>
 </html>
