@@ -32,6 +32,9 @@ import ex_icon1 from '../../assets/images/what_even_happend/ex_icon1.png'
 import ex_icon2 from '../../assets/images/what_even_happend/ex_icon2.png'
 import ex_icon3 from '../../assets/images/what_even_happend/ex_icon3.png'
 
+// Retrieve the workspace URL dynamically
+const WORKSPACE_URL = process.env.GITPOD_WORKSPACE_URL || window.location.origin;
+
 const Registration = () => {
     let navigate = useNavigate();
     const dispatch = useDispatch();
@@ -183,7 +186,7 @@ const Registration = () => {
         registrationObject.feeling = feelingValue
         try {
             const response = await trackPromise(
-            axios.post('https://5000-march33s3-servistry-xpectls7szm.ws-us115.gitpod.io/api/registration/add',registrationObject, {
+            axios.post('${WORKSPACE_URL}/api/registration/add',registrationObject, {
                 headers: {
                     "Content-Type": "application/json",
                 }
