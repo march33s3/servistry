@@ -40,11 +40,19 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
     <script>
-      // Determine the backend URL dynamically
-      const backendUrl = window.location.origin.replace("3000", "5000"); // Change the port from 3000 to 5000 for Gitpod
+      // Determine the backend URL dynamically by replacing the frontend port with backend port
+      const backendUrl = window.location.origin.replace("3000", "5000"); // Change port from 3000 to 5000 for Gitpod
       const script = document.createElement("script");
       script.src = `${backendUrl}/config.js`;
+      script.onload = function() {
+          console.log("config.js loaded successfully with WORKSPACE_URL:", WORKSPACE_URL);
+          window.WORKSPACE_URL = WORKSPACE_URL; // Assign WORKSPACE_URL globally
+          // Load registration.js after config.js is loaded
+          const registrationScript = document.createElement("script");
+           registrationScript.src = "/registration.js"; // Adjust the path if necessary
+          document.head.appendChild(registrationScript);
+      };
       document.head.appendChild(script);
-    </script>
+  </script>
   </body>
 </html>

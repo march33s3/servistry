@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../Components/Header/Header'
 import {setUserDetail} from "../../store/action/user-detail-actions";
 import {toastHandler} from "../../Components/toaster";
+import { useEffect } from 'react';
 
 // Import images
 import icon1 from '../../assets/images/what_even_happend/icon1.png'
@@ -180,12 +181,20 @@ const Registration = () => {
         }
     };
 
+
+
     // service call
     const registrationService = async () => {
+
+        if (typeof WORKSPACE_URL === 'undefined') {
+            console.error('WORKSPACE_URL is not defined. config.js might not be loaded properly.');
+            return;
+        }
+        
         registrationObject.feeling = feelingValue
         try {
             const response = await trackPromise(
-            axios.post('${WORKSPACE_URL}/api/registration/add',registrationObject, {
+            axios.post(`${window.WORKSPACE_URL}/api/registration/add`,registrationObject, {
                 headers: {
                     "Content-Type": "application/json",
                 }
@@ -203,6 +212,8 @@ const Registration = () => {
     }
 
 };
+
+
 
     return (
         <div className='Registration'>
