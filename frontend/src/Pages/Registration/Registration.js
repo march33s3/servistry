@@ -33,7 +33,7 @@ import ex_icon2 from '../../assets/images/what_even_happend/ex_icon2.png'
 import ex_icon3 from '../../assets/images/what_even_happend/ex_icon3.png'
 
 // Retrieve the workspace URL dynamically
-const WORKSPACE_URL = process.env.GITPOD_WORKSPACE_URL || window.location.origin;
+const WORKSPACE_URL = process.env.GITPOD_WORKSPACE_URL;
 
 const Registration = () => {
     let navigate = useNavigate();
