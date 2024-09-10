@@ -46,7 +46,7 @@
       script.src = `${backendUrl}/config.js`;
       script.onload = function() {
           console.log("config.js loaded successfully with WORKSPACE_URL:", WORKSPACE_URL);
-          window.WORKSPACE_URL = WORKSPACE_URL; // Assign WORKSPACE_URL globally
+          window.WORKSPACE_URL = WORKSPACE_URL.replace(/^https?:\/\/(\d{4}-)?/, "https://5000-"); // Prepend '5000-' to the URL Assign WORKSPACE_URL globally
           // Load registration.js after config.js is loaded
           const registrationScript = document.createElement("script");
            registrationScript.src = "/registration.js"; // Adjust the path if necessary
