@@ -76,7 +76,7 @@ function Login() {
       // Make the API call using axios within a trackPromise wrapper to handle loading state
       const response = await trackPromise(
         axios.post(
-          `${window.WORKSPACE_URL}/user/login`, // Backend login endpoint
+          `${window.WORKSPACE_URL}/api/user/login`, // Backend login endpoint
           loginFormData, // Send the form data (email and password) in the request body
           { headers: { "Content-Type": "application/json" } } // Set the content type to JSON
         )

@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require('body-parser');
 const connectDB = require('./config/db'); // Import the database connection module
 const registrationRoutes = require('./routes/registration');
+const authRoutes = require("./routes/auth"); // Import auth (login) routes
 
 
 const app = express();
@@ -27,9 +28,13 @@ app.get('/config.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
     res.send(`const WORKSPACE_URL = "${workspaceUrl}";`); // Inject the environment variable dynamically
 });
+app.get('/', (req, res) => {
+    res.send('Welcome to the backend server!');
+  });
 
 // Routes
 app.use('/api/registration', registrationRoutes)
+app.use("/api/user", authRoutes); // Authentication routes for login
 
 // Start server
 app.listen(port, () => console.log('Server is running on port: ${port}'));
