@@ -27,14 +27,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  feeling: {
-    type: String,
-    required: false,
-  },
-  eventName: {
-    type: String,
-    required: false,
-  },
   address: {
     type: String,
     required: false,
@@ -65,6 +57,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
+  },
+  userType: {
+    type: String,
+    required: false,
   },
 }, { timestamps: true }); // Automatically add createdAt and updatedAt fields
 

@@ -1,27 +1,25 @@
+// models/Registration.js
 const mongoose = require('mongoose');
 
-const RegistrationSchema = new mongoose.Schema({
-  firstandLastName: { type: String, required: true },
-  emailAddress: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  feeling: { type: String, required: true },
-  userType: { type: String, required: false },
-  eventID: { type: String, required: true },
-  promotionalOffersAndUpdates: { type: Boolean },
+const registrationSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to the User model
+    required: true,
+  },
+  feeling: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  eventName: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  // Any other registration-specific fields...
+}, { timestamps: true });
 
-});
+const Registration = mongoose.model('Registration', registrationSchema);
 
-module.exports = mongoose.model('Registration', RegistrationSchema);
-
-
-
-//const registrationModal = {
-//    promotionalOffersAndUpdates: false,
-//    password: '',
-//    userType: '',
-//    eventID: '',
-//    feeling: '',
-//    emailAddress: '',
-//    firstandLastName: '',
-//}
-//export default registrationModal;
+module.exports = Registration;

@@ -38,3 +38,5 @@ app.use('/api/user', authRoutes); // Authentication routes for login
 
 // Start server
 app.listen(port, () => console.log('Server is running on port: ${port}'));
+
+
