@@ -196,10 +196,15 @@ const Registration = () => {
 
         if (response.status === 201 && response.data.message === 'success') {
             dispatch(setUserDetail(response.data.data))
+
+          // Store token in localStorage for PrivateRoute authentication
+          localStorage.setItem('token', response.data.token);
+
             navigate("/profile");
         }
         
     } catch (error) {
+            console.error("Error during registration:", error.response);
             toastHandler(error.response?.data?.message || 'An error occurred during registration.');
     }
 

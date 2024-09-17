@@ -26,11 +26,15 @@ function Login() {
     const loginInfo = (e) => {
         const { name, value } = e.target; // Destructuring the name and value from the input field
         // Update the state dynamically using the input field's name as the key
-        setLoginFormData((prevState) => ({
+        setLoginFormData((prevState) => {
+          const updatedState = {
           ...prevState, // Keep the previous state
           [name]: value, //  Update the specific field with the new value
-        }));
-      };
+    };
+        console.log("Updated login form data:", updatedState); // Debugging log
+        return updatedState;
+      });
+    };
 
     /**
    * Function to validate the input fields before making the API call.
@@ -68,9 +72,14 @@ function Login() {
    * Makes an asynchronous API call to authenticate the user with the provided credentials.
    * If successful, updates the Redux store with user details and token, then navigates to the profile page.
    */  
-  const loginService = async () => {
+  const loginService = async (e) => {
+    e.preventDefault(); // Prevent the default form submission
     // Validate inputs before making the API call
-    if (!validateInputs()) return;
+    console.log("Login button clicked");
+    if (!validateInputs()) {
+      console.log("Validation failed");
+    return;
+    }
 
     try {
       // Make the API call using axios within a trackPromise wrapper to handle loading state
@@ -83,15 +92,23 @@ function Login() {
       );
 
       // If the login is successful, response status will be 200 and message will be 'success'
-      if (response.status === 200 && response.data.message === "success") {
+      if (response.status === 200 && response.data.message === "Login successful") {
+        
         // Dispatch actions to update the Redux store with user details and token
         dispatch(setUserDetail(response.data.data)); // Store user details in Redux
         dispatch(setTokenActions(response.data.token)); // Store authentication token in Redux
+        
+      // Store token in localStorage for PrivateRoute authentication
+        localStorage.setItem('token', response.data.token);
+
+        console.log("Navigating to profile...");
         navigate("/profile"); // Navigate to the profile page upon successful login
       }
     } catch (error) {
-      // Handle any errors that occur during the API call
-      toastHandler(error.response?.data?.data || "An error occurred. Please try again."); // Show an error message
+      console.error("Error during login:", error.response); // Log full error response
+      toastHandler(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
     }
   };
 
@@ -131,8 +148,8 @@ function Login() {
                                     className="input_field w-100"
                                     name="password"
                                     value={loginFormData.password} // Bind input value to state
-                                    onChange={loginInfo} // Handle input changes                            </div>
-                                    />
+                                    onChange={loginInfo} // Handle input changes
+                                />
                             </div>
 
                              {/* Link for forgotten password (functionality not yet implemented) */}
@@ -142,8 +159,9 @@ function Login() {
                             <div className="mt-4">
                                 <button 
                                     className="button2 rounded-3 px-4 px-md-5"
-                                    onClick={(e) => loginService(e)}  // Trigger the login service function on click
-                                >Login
+                                    onClick={loginService}  // Trigger the login service function on click
+                                >
+                                  Login
                                 </button>
                             </div>
                         </div>
