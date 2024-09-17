@@ -16,31 +16,40 @@ import ServiceModal from "./Components/ServiceModal";
 import AddServices from "./Pages/Services/AddServices";
 import PrivateRegistry from "./Pages/PrivateRegistry/Private_Registry";
 
+// Optional: Import a private route wrapper to protect certain routes
+import PrivateRoute from "./Components/PrivateRoute";
 
 function App() {
     return (
-        <>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Home/>}/>
-                    <Route path="/registration" element={<Registration/>}/>
-                    <Route path="/profile" element={<Profile/>}/>
-                    <Route path="/login" element={<Login/>}/>
-                    <Route path="/accountsettings" element={<AccountSettings/>}/>
-                    <Route path="/registry" element={<Registry/>}/>
-                    <Route path="/testimonialSlider" element={<TestimonialSliderParent/>}/>
-                    <Route path="/filterservices" element={<FilterServices/>}/>
-                    <Route path="/cart" element={<Cart/>}/>
-                    <Route path="/registry/services" element={<ServiceModal/>}/>
-                    <Route path="/services" element={<Services/>}/>
-                    <Route path="/addServices" element={<AddServices/>}/>
-                    <Route path="/businessProfile" element={<BusinessProfile/>}/>
-                    <Route path="/chat" element={<Chat/>}/>
-                    <Route path="/private/registry" element={<PrivateRegistry/>}/>
-                </Routes>
-            </BrowserRouter>
-        </>
+      <BrowserRouter>
+        {/* Optional: Include a common header or layout */}
+        {/* <Header /> */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/profile" element={
+            <PrivateRoute> 
+              <Profile />
+            </PrivateRoute>
+           } 
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/accountsettings" element={
+            <PrivateRoute element={AccountSettings} /> // Protect the account settings route
+          } />
+          <Route path="/registry" element={<Registry />} />
+          <Route path="/testimonialSlider" element={<TestimonialSliderParent />} />
+          <Route path="/filterservices" element={<FilterServices />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/registry/services" element={<ServiceModal />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/addServices" element={<AddServices />} />
+          <Route path="/businessProfile" element={<BusinessProfile />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/private/registry" element={<PrivateRegistry />} />
+        </Routes>
+      </BrowserRouter>
     );
-}
-
-export default App;
+  }
+  
+  export default App;

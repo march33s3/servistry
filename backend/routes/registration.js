@@ -39,7 +39,7 @@ router.post('/register', async (req, res) => {
 
     // Hash the password before saving to the database
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create a new user
     const newUser = new User({ 
@@ -52,11 +52,11 @@ router.post('/register', async (req, res) => {
     });
 
     // Save the user in the database
-      await user.save();
+      await newUser.save();
 
     // Create a registration entry with registration-specific fields
     const registration = new Registration({
-      userId: user._id, // Reference to the newly created user
+      userId: newUser._id, // Reference to the newly created user
       feeling,
       eventName,
     });
