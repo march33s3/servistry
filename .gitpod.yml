@@ -22,6 +22,12 @@ tasks:
       mkdir -p /workspace/data/log
       # Start MongoDB
       mongod --dbpath /workspace/data/db --logpath /workspace/data/log/mongodb.log --fork
+      # Construct the URLs manually
+      BACKEND_URL="https://5000-${GITPOD_WORKSPACE_URL#https://}"
+      FRONTEND_URL="https://3000-${GITPOD_WORKSPACE_URL#https://}"
+      # Set variables for environment URLs
+      echo "REACT_APP_BACKEND_URL=$BACKEND_URL" > frontend/.env
+      echo "FRONTEND_URL=$FRONTEND_URL" > backend/.env
 
     command: |
       # Wait for MongoDB to start
@@ -35,5 +41,5 @@ tasks:
 ports:
   - port: 3000
     onOpen: open-preview
-  - port: 27017
+  - port: 5000
     onOpen: ignore
