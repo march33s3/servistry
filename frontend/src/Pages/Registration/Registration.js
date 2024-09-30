@@ -11,6 +11,7 @@ import Header from '../../Components/Header/Header'
 import {setUserDetail} from "../../store/action/user-detail-actions";
 import {toastHandler} from "../../Components/toaster";
 import { useEffect } from 'react';
+import { BACKEND_URL } from '../../config';
 
 // Import images
 import icon1 from '../../assets/images/what_even_happend/icon1.png'
@@ -177,16 +178,11 @@ const Registration = () => {
 
     // service call
     const registrationService = async () => {
-
-        if (typeof WORKSPACE_URL === 'undefined') {
-            console.error('WORKSPACE_URL is not defined. config.js might not be loaded properly.');
-            return;
-        }
         
         registrationObject.feeling = feelingValue
         try {
             const response = await trackPromise(
-            axios.post(`${window.WORKSPACE_URL}/api/registration/register`,registrationObject, {
+            axios.post(`${BACKEND_URL}/api/registration/register`,registrationObject, {
                 headers: {
                     "Content-Type": "application/json",
                 }
