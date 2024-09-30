@@ -44,16 +44,10 @@ tasks:
       cat frontend/.env
       echo "Contents of backend/.env:"
       cat backend/.env
-      # Start the backend
-      cd backend
-      npm start &
-      BACKEND_PID=$!
-      # Start the frontend
-      cd ../frontend
-      npm start &
-      FRONTEND_PID=$!
-      # Wait for both processes to keep the terminal open
-      wait $BACKEND_PID $FRONTEND_PID
+      # Start the backend in a new terminal
+      gp exec --command "cd backend && npm start" --terminal "Backend Server"
+      # Start the frontend in a new terminal
+      gp exec --command "cd frontend && npm start" --terminal "Frontend Server"
 ports:
   - port: 3000
     onOpen: open-preview
