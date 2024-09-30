@@ -8,7 +8,9 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: |
+  - name: "Setup and Start Servers"
+    openMode: split-right
+    init: |
       # Install backend dependencies
       cd backend
       npm install
@@ -22,9 +24,6 @@ tasks:
       mkdir -p /workspace/data/log
       # Start MongoDB
       mongod --dbpath /workspace/data/db --logpath /workspace/data/log/mongodb.log --fork
-
-  - name: "Start Servers"
-    openMode: split-right
     command: |
       # Enable command tracing for debugging
       set -x
