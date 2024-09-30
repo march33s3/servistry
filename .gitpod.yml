@@ -4,6 +4,7 @@
 
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
+
 image:
   file: .gitpod.Dockerfile
 
@@ -29,15 +30,15 @@ tasks:
       set -x
       # Wait for MongoDB to start
       sleep 5
-      # Construct the URLs manually
+      # Get URLs using gp url
       BACKEND_URL=$(gp url 5000)
       FRONTEND_URL=$(gp url 3000)
       # Debugging output
-      #echo "BACKEND_URL: $BACKEND_URL"
-      #echo "FRONTEND_URL: $FRONTEND_URL"
+      echo "BACKEND_URL: $BACKEND_URL"
+      echo "FRONTEND_URL: $FRONTEND_URL"
       # Set variables for environment URLs
-      #echo "REACT_APP_BACKEND_URL=$BACKEND_URL" > frontend/.env
-      #echo "FRONTEND_URL=$FRONTEND_URL" > backend/.env
+      echo "REACT_APP_BACKEND_URL=$BACKEND_URL" > frontend/.env
+      echo "FRONTEND_URL=$FRONTEND_URL" > backend/.env
       # Verify .env files
       echo "Contents of frontend/.env:"
       cat frontend/.env
@@ -46,9 +47,13 @@ tasks:
       # Start the backend
       cd backend
       npm start &
+      BACKEND_PID=$!
       # Start the frontend
       cd ../frontend
-      npm start
+      npm start &
+      FRONTEND_PID=$!
+      # Wait for both processes to keep the terminal open
+      wait $BACKEND_PID $FRONTEND_PID
 ports:
   - port: 3000
     onOpen: open-preview
