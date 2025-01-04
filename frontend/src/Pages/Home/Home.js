@@ -42,10 +42,10 @@ function Home() {
                                 <h1 className='titlep1'>Servistry<span>&trade;</span></h1>
                                 <h1 className='titlep2'>eco-friendly registry</h1>
                                 <p className='para1 my-4'>
-                                    Lorem Ipsum is simply dummy text of the <br />
-                                    printing and typesetting industry. Lorem <br />
-                                    Ipsum has been the industry's standard <br />
-                                    dummy text ever since the 1500s
+                                    At <b>Servistry</b>, we believe in supporting people and the planet. <br />
+                                    That’s why we offer an alternative: <b>a crowdfunding registry</b>  <br />
+                                    centered on services instead of physical gifts.  <br />
+                                    <b>Save time, energy, and the environment with Servistry.</b>
                                 </p>
                                 <div>
                                     <Link to="/registration"><button className='button2'>Start Registry</button></Link>
