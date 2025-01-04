@@ -2,8 +2,7 @@ import React from 'react'
 import Header from '../../Components/Header/Header'
 import '../../assets/css/style.css'
 import Footer from '../../Components/Footer/Footer'
-import Slider from './Section1/Slider'
-import {FaFacebookF, FaInstagram, FaTwitter} from 'react-icons/fa';
+import {FaFacebookF, FaInstagram, FaTwitter} from 'react-icons/fa'
 import Slider2 from './Section1/Slider2'
 import {Container} from 'react-bootstrap'
 import s2img from '../../assets/images/h_s2img.png'
@@ -17,6 +16,8 @@ import simg5 from '../../assets/images/sevice/simg5.png'
 import simg6 from '../../assets/images/sevice/simg6.png'
 import simg7 from '../../assets/images/sevice/simg7.png'
 import simg8 from '../../assets/images/sevice/simg8.png'
+import img1 from '../../assets/images/servistry_gift_box.png';
+
 
 import Accordation from './Section5/Accordation'
 import {Link} from 'react-router-dom'
@@ -34,7 +35,29 @@ function Home() {
                 }
 
                 <div className='position relative'>
-                    <Slider/>
+                <Container>
+                    <div className='slider_grid'>
+                        <div className='sg_child1'>
+                            <div>
+                                <h1 className='titlep1'>Servistry<span>&trade;</span></h1>
+                                <h1 className='titlep2'>eco-friendly registry</h1>
+                                <p className='para1 my-4'>
+                                    Lorem Ipsum is simply dummy text of the <br />
+                                    printing and typesetting industry. Lorem <br />
+                                    Ipsum has been the industry's standard <br />
+                                    dummy text ever since the 1500s
+                                </p>
+                                <div>
+                                    <Link to="/registration"><button className='button2'>Start Registry</button></Link>
+                                    {/*<Link to="/registry"><button className='button1 ms-2'>Find Registry</button></Link>*/}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <img src={img1} className="sliderimg" alt="" />
+                        </div>
+                    </div>
+                </Container>
                     <div className='h_social_main'>
                         <div><a href="/"><FaTwitter/></a></div>
                         <div><a href="/"><FaFacebookF/></a></div>
