@@ -167,18 +167,6 @@ function Home() {
                             {/*    <button className='button1 footer_bnner_s_btn'>Find Registry</button>*/}
                             {/*</Link>*/}
                         </div>
-                        <div className='fbm_card fbm_card_left'>
-                            <div>
-                                <img src={icon1} alt=""/>
-                                <p className='para1 mt-2 mb-0'>Sickness</p>
-                            </div>
-                        </div>
-                        <div className='fbm_card fbm_card_right'>
-                            <div>
-                                <img src={icon2} alt=""/>
-                                <p className='para1 mt-2 mb-0'>Sickness</p>
-                            </div>
-                        </div>
                     </div>
                 </Container>
                 <Footer/>
