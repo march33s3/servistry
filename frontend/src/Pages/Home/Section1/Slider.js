@@ -43,8 +43,8 @@ function Slider() {
                     <div className='slider_grid'>
                         <div className='sg_child1'>
                             <div>
-                                <h1 className='titlep1'>We help you in</h1>
-                                <h1 className='titlep2'>all moments</h1>
+                                <h1 className='titlep1'>Servistry<span>&trade;</span></h1>
+                                <h1 className='titlep2'>eco-friendly registry</h1>
                                 <p className='para1 my-4'>
                                     Lorem Ipsum is simply dummy text of the <br />
                                     printing and typesetting industry. Lorem <br />
