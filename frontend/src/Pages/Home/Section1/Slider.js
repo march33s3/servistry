@@ -22,7 +22,7 @@ import 'swiper/modules/scrollbar/scrollbar.min.css';
 
 
 
-import img1 from '../../../assets/images/sliderImg1.png'
+import img1 from '../../../assets/images/frontend/src/assets/images/servistry-gift-box.png';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
