@@ -9,6 +9,7 @@ import {useNavigate} from "react-router-dom";
 import {setUserDetail} from "../../store/action/user-detail-actions";
 import Header from "../../Components/Header/Header";
 import {setTokenActions} from "../../store/action/setToken-actions";
+import { BACKEND_URL } from '../../config';
 
 function Login() {
     // State to hold form data for login (email and password)   
@@ -85,7 +86,7 @@ function Login() {
       // Make the API call using axios within a trackPromise wrapper to handle loading state
       const response = await trackPromise(
         axios.post(
-          `${window.WORKSPACE_URL}/api/user/login`, // Backend login endpoint
+          `${BACKEND_URL}/api/user/login`, // Backend login endpoint
           loginFormData, // Send the form data (email and password) in the request body
           { headers: { "Content-Type": "application/json" } } // Set the content type to JSON
         )

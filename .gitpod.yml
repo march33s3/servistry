@@ -4,14 +4,17 @@
 
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
+
 image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: |
+  - name: "Setup and Start Servers"
+    openMode: split-right
+    init: |
       # Install backend dependencies
       cd backend
-      npm install
+      npm dev
       cd ..
       # Install frontend dependencies
       cd frontend
@@ -22,18 +25,34 @@ tasks:
       mkdir -p /workspace/data/log
       # Start MongoDB
       mongod --dbpath /workspace/data/db --logpath /workspace/data/log/mongodb.log --fork
-
     command: |
+      # Enable command tracing for debugging
+      set -x
       # Wait for MongoDB to start
       sleep 5
-      # Start the backend
+      # Get URLs using gp url
+      BACKEND_URL=$(gp url 5000)
+      FRONTEND_URL=$(gp url 3000)
+      # Debugging output
+      echo "BACKEND_URL: $BACKEND_URL"
+      echo "FRONTEND_URL: $FRONTEND_URL"
+      # Set variables for environment URLs
+      echo "REACT_APP_BACKEND_URL=$BACKEND_URL" > frontend/.env
+      echo "FRONTEND_URL=$FRONTEND_URL" > backend/.env
+      # Verify .env files
+      echo "Contents of frontend/.env:"
+      cat frontend/.env
+      echo "Contents of backend/.env:"
+      cat backend/.env
+      #Start backend server
       cd backend
       npm start &
-      # Start the frontend
-      cd ../frontend
+      cd ..
+      # Start frontend server
+      cd frontend
       npm start
 ports:
   - port: 3000
     onOpen: open-preview
-  - port: 27017
+  - port: 5000
     onOpen: ignore
