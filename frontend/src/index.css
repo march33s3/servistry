@@ -9,9 +9,18 @@
 }
 
 :root {
+    /* Existing font-family variables */
     --font-openSans: 'Open Sans', sans-serif;
     --font-poppins: 'Poppins', sans-serif;
     --font-roboto: 'Roboto', sans-serif;
+
+    /* NEW color palette (with your custom names) */
+    --color-mustard: #c3ba3f;    /* Mustard */
+    --color-green: #366631;      /* Green */
+    --color-aqua: #5fc0c6;       /* Aqua */
+    --color-olive: #9ba454;      /* Olive */
+    --color-sky-blue: #acddd6;   /* Sky Blue */
+    --color-tan-beige: #dfdbc5;  /* Tannish Beige */
     --color-gold: #D2AF40;
     --color-light-gold: #E9DEA6;
     --color-grey: #656453;
