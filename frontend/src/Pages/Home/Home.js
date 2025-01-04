@@ -4,7 +4,6 @@ import '../../assets/css/style.css'
 import Footer from '../../Components/Footer/Footer'
 import Slider from './Section1/Slider'
 import {FaFacebookF, FaInstagram, FaTwitter} from 'react-icons/fa';
-import chatIcon from '../../assets/images/chatIcon.png'
 import Slider2 from './Section1/Slider2'
 import {Container} from 'react-bootstrap'
 import s2img from '../../assets/images/h_s2img.png'
@@ -20,8 +19,6 @@ import simg7 from '../../assets/images/sevice/simg7.png'
 import simg8 from '../../assets/images/sevice/simg8.png'
 
 import Accordation from './Section5/Accordation'
-import icon1 from '../../assets/images/icons/birth.png'
-import icon2 from '../../assets/images/icons/sickness.png'
 import {Link} from 'react-router-dom'
 import LoginHeader from "../../Components/Header/LoginHeader";
 import {useSelector} from "react-redux";
@@ -42,9 +39,6 @@ function Home() {
                         <div><a href="/"><FaTwitter/></a></div>
                         <div><a href="/"><FaFacebookF/></a></div>
                         <div><a href="/"><FaInstagram/></a></div>
-                    </div>
-                    <div className='chatIconDiv'>
-                        <img src={chatIcon} className="chatIcon" alt=""/>
                     </div>
                 </div>
             </div>
