@@ -73,7 +73,7 @@ function Slider2() {
             <div className='alice_div'>
                 <div>
                     <img src={icon7} alt="" />
-                    <p className='para1'>Birth</p>
+                    <p className='para1'>Death</p>
                 </div>
             </div>
         </div>,

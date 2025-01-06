@@ -2,9 +2,7 @@ import React from 'react'
 import Header from '../../Components/Header/Header'
 import '../../assets/css/style.css'
 import Footer from '../../Components/Footer/Footer'
-import Slider from './Section1/Slider'
-import {FaFacebookF, FaInstagram, FaTwitter} from 'react-icons/fa';
-import chatIcon from '../../assets/images/chatIcon.png'
+import {FaFacebookF, FaInstagram, FaTwitter} from 'react-icons/fa'
 import Slider2 from './Section1/Slider2'
 import {Container} from 'react-bootstrap'
 import s2img from '../../assets/images/h_s2img.png'
@@ -18,10 +16,10 @@ import simg5 from '../../assets/images/sevice/simg5.png'
 import simg6 from '../../assets/images/sevice/simg6.png'
 import simg7 from '../../assets/images/sevice/simg7.png'
 import simg8 from '../../assets/images/sevice/simg8.png'
+import img1 from '../../assets/images/servistry_gift_box.png';
+
 
 import Accordation from './Section5/Accordation'
-import icon1 from '../../assets/images/icons/birth.png'
-import icon2 from '../../assets/images/icons/sickness.png'
 import {Link} from 'react-router-dom'
 import LoginHeader from "../../Components/Header/LoginHeader";
 import {useSelector} from "react-redux";
@@ -37,14 +35,33 @@ function Home() {
                 }
 
                 <div className='position relative'>
-                    <Slider/>
+                <Container>
+                    <div className='slider_grid'>
+                        <div className='sg_child1'>
+                            <div>
+                                <h1 className='titlep1'>Servistry<span>&trade;</span></h1>
+                                <h1 className='titlep2'>eco-friendly registry</h1>
+                                <p className='para1 my-4'>
+                                    At <b>Servistry</b>, we believe in supporting people and the planet. <br />
+                                    That’s why we offer an alternative: <b>a crowdfunding registry</b>  <br />
+                                    centered on services instead of physical gifts.  <br />
+                                    <b>Save time, energy, and the environment with Servistry.</b>
+                                </p>
+                                <div>
+                                    <Link to="/registration"><button className='button2'>Start Registry</button></Link>
+                                    {/*<Link to="/registry"><button className='button1 ms-2'>Find Registry</button></Link>*/}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <img src={img1} className="sliderimg" alt="" />
+                        </div>
+                    </div>
+                </Container>
                     <div className='h_social_main'>
                         <div><a href="/"><FaTwitter/></a></div>
                         <div><a href="/"><FaFacebookF/></a></div>
                         <div><a href="/"><FaInstagram/></a></div>
-                    </div>
-                    <div className='chatIconDiv'>
-                        <img src={chatIcon} className="chatIcon" alt=""/>
                     </div>
                 </div>
             </div>
@@ -166,18 +183,6 @@ function Home() {
                             {/*<Link to="/registry">*/}
                             {/*    <button className='button1 footer_bnner_s_btn'>Find Registry</button>*/}
                             {/*</Link>*/}
-                        </div>
-                        <div className='fbm_card fbm_card_left'>
-                            <div>
-                                <img src={icon1} alt=""/>
-                                <p className='para1 mt-2 mb-0'>Sickness</p>
-                            </div>
-                        </div>
-                        <div className='fbm_card fbm_card_right'>
-                            <div>
-                                <img src={icon2} alt=""/>
-                                <p className='para1 mt-2 mb-0'>Sickness</p>
-                            </div>
                         </div>
                     </div>
                 </Container>

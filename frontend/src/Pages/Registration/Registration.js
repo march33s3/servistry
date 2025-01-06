@@ -10,7 +10,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../Components/Header/Header'
 import {setUserDetail} from "../../store/action/user-detail-actions";
 import {toastHandler} from "../../Components/toaster";
-import { useEffect } from 'react';
 import { BACKEND_URL } from '../../config';
 
 // Import images
