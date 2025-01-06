@@ -45,7 +45,7 @@ function Footer() {
             </div>
           </div>
         </div>
-          <p className='text-center mb-3 mt-5'>Life &copy; 2022</p>
+          <p className='text-center mb-3 mt-5'>Life &copy; 2025</p>
       </Container>
     </div>
   )

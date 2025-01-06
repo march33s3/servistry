@@ -155,7 +155,7 @@
 /* section1 */
 .h_section1 {
     min-height: auto;
-    background-color: #E0E2E1;
+    background-color: var(--color-sky-blue);
     position: relative;
     background-image: url(../images/banner-ovreflow.png);
     background-size: cover;
