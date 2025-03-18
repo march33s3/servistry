@@ -70,7 +70,6 @@ const Register = () => {
               required
             />
           </div>
-          // File: client/src/components/auth/Register.js (continued)
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <input

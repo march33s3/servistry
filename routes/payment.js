@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const auth = require('../middleware/auth');
 const Service = require('../models/Service');
 const Transaction = require('../models/Transaction');
 const Registry = require('../models/Registry');
