@@ -40,8 +40,8 @@ router.post('/create-payment-intent', [
       return res.status(404).json({ msg: 'Service not found' });
     }
 
-  // Create an idempotency key based on service ID, email and amount
-  const idempotencyKey = `payment_${serviceId}_${email}_${amount}_${Date.now()}`;
+    // Create an idempotency key based on service ID, email and amount
+    const idempotencyKey = `payment_${serviceId}_${email}_${amount}_${Date.now()}`;
 
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
@@ -53,11 +53,12 @@ router.post('/create-payment-intent', [
       }
     }, {
       idempotencyKey
-    });
+  });
 
-    res.json({
-      clientSecret: paymentIntent.client_secret
-    });
+  res.json({
+    clientSecret: paymentIntent.client_secret
+  });
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -75,23 +76,35 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
+    console.error(`Webhook signature verification failed: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   // Handle the event
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data.object;
+if (event.type === 'payment_intent.succeeded') {
+  const paymentIntent = event.data.object;
+  const intentId = paymentIntent.id;
+  
+  try {
+    // Verify the payment intent directly with Stripe
+    const verifiedIntent = await stripe.paymentIntents.retrieve(intentId);
     
-    // Update service funded amount
+    // Only proceed if the status is truly 'succeeded'
+    if (verifiedIntent.status !== 'succeeded') {
+      console.error(`Payment verification failed: Intent ${intentId} has status ${verifiedIntent.status}`);
+      return res.status(400).send('Payment not confirmed');
+    }
+    
     const serviceId = paymentIntent.metadata.serviceId;
     const email = paymentIntent.metadata.email;
     const amount = paymentIntent.amount / 100; // Convert from cents
-
-    try {
-      const service = await Service.findById(serviceId);
-      if (!service) {
-        return res.status(404).json({ msg: 'Service not found' });
-      }
+    
+     // Update service funded amount
+     const service = await Service.findById(serviceId);
+     if (!service) {
+       console.error(`Service not found: ${serviceId}`);
+       return res.status(404).json({ msg: 'Service not found' });
+     }
 
       // Create transaction
       const transaction = new Transaction({
@@ -144,11 +157,24 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         }
       });
     } catch (err) {
-      console.error(err.message);
+      console.error(`Error processing payment success: ${err.message}`);
+      return res.status(500).send('Server error processing payment');
     }
   } else if (event.type === 'payment_intent.payment_failed') {
   const paymentIntent = event.data.object;
-  
+  const { error } = paymentIntent.last_payment_error || {};
+
+  // Enhanced logging
+  console.error('Payment failed:', {
+    intentId: paymentIntent.id,
+    errorType: error?.type,
+    errorCode: error?.code,
+    errorMessage: error?.message,
+    serviceId: paymentIntent.metadata.serviceId,
+    email: paymentIntent.metadata.email,
+    amount: paymentIntent.amount / 100
+  });  
+
   // Log failed payment
   const serviceId = paymentIntent.metadata.serviceId;
   const email = paymentIntent.metadata.email;
@@ -161,12 +187,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       amount,
       stripePaymentId: paymentIntent.id,
       contributorEmail: email,
-      status: 'failed'
+      status: 'failed',
+      errorDetails: error ? JSON.stringify(error) : 'Unknown error'
     });
 
     await transaction.save();
+
+    try {
+      const contributorMailOptions = {
+        from: process.env.EMAIL_FROM,
+        to: email,
+        subject: 'Payment Processing Issue',
+        text: `There was an issue processing your payment of $${amount} for the service. Please try again or contact support if the issue persists.`
+      };
+
+      transporter.sendMail(contributorMailOptions);
+    
+    } catch (emailErr) {
+      console.error('Failed to send payment failure email:', emailErr);
+    }  
   } catch (err) {
-    console.error(err.message);
+    console.error('Failed to save failed transaction:', err.message);
   }
 }
 
