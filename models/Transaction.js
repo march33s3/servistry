@@ -24,6 +24,10 @@ const TransactionSchema = new mongoose.Schema({
     enum: ['pending', 'completed', 'failed'],
     default: 'pending'
   },
+  errorDetails: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
