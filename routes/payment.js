@@ -40,6 +40,9 @@ router.post('/create-payment-intent', [
       return res.status(404).json({ msg: 'Service not found' });
     }
 
+  // Create an idempotency key based on service ID, email and amount
+  const idempotencyKey = `payment_${serviceId}_${email}_${amount}_${Date.now()}`;
+
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount * 100, // Convert to cents
@@ -48,6 +51,8 @@ router.post('/create-payment-intent', [
         serviceId,
         email
       }
+    }, {
+      idempotencyKey
     });
 
     res.json({
