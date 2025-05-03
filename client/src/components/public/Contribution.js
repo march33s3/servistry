@@ -20,6 +20,8 @@ const PaymentForm = ({ service, registrySlug }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [cardError, setCardError] = useState(null);
+  const [processingStatus, setProcessingStatus] = useState(''); // For detailed status updates
+  const [isProcessingComplete, setIsProcessingComplete] = useState(false);
 
   const handleAmountChange = (e) => {
     setAmount(e.target.value);
@@ -38,9 +40,11 @@ const PaymentForm = ({ service, registrySlug }) => {
 
     setLoading(true);
     setCardError(null);
+    setProcessingStatus('Initiating payment...');
 
     try {
       // Create payment intent on the server
+      setProcessingStatus('Creating payment request...');
       const paymentIntentResponse = await createPaymentIntent(
         service._id,
         parseFloat(amount),
@@ -49,10 +53,12 @@ const PaymentForm = ({ service, registrySlug }) => {
 
       if (!paymentIntentResponse) {
         setLoading(false);
+        setProcessingStatus('Payment setup failed.');
         return;
       }
 
       // Confirm the payment with Stripe
+      setProcessingStatus('Processing your card...');
       const result = await stripe.confirmCardPayment(paymentIntentResponse.clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
@@ -64,14 +70,24 @@ const PaymentForm = ({ service, registrySlug }) => {
 
       if (result.error) {
         setCardError(result.error.message);
+        setProcessingStatus('Payment failed');
       } else {
         if (result.paymentIntent.status === 'succeeded') {
+          setProcessingStatus('Payment successful!');
+          setIsProcessingComplete(true);
           toast.success('Payment successful! Thank you for your contribution.');
-          navigate(`/registry/${registrySlug}`);
+          
+          // Add a short delay to show the success message before redirecting
+          setTimeout(() => {
+            navigate(`/registry/${registrySlug}`);
+          }, 2000);
+        } else {
+          setProcessingStatus(`Payment ${result.paymentIntent.status}`);
         }
       }
     } catch (err) {
       console.error('Payment error:', err);
+      setProcessingStatus('Payment processing error');
       toast.error('There was an error processing your payment. Please try again.');
     }
 
@@ -130,13 +146,30 @@ const PaymentForm = ({ service, registrySlug }) => {
         </div>
         {cardError && <div className="card-error">{cardError}</div>}
       </div>
+
+      {/* Add status indicator */}
+      {processingStatus && (
+        <div className={`payment-status ${isProcessingComplete ? 'success' : ''}`}>
+          <p>{processingStatus}</p>
+          {loading && <div className="processing-spinner"></div>}
+        </div>
+      )}
+      
+      {/* Disable button when processing */}
       <button
         type="submit"
-        disabled={!stripe || loading}
+        disabled={!stripe || loading || isProcessingComplete}
         className={`btn btn-primary btn-block ${loading ? 'btn-loading' : ''}`}
       >
-        {loading ? 'Processing...' : 'Make Contribution'}
+        {loading ? 'Processing...' : isProcessingComplete ? 'Payment Complete!' : 'Make Contribution'}
       </button>
+      
+      {/* Add safety message */}
+      {loading && (
+        <div className="payment-processing-warning">
+          <p><i className="fas fa-exclamation-circle"></i> Please do not close your browser window during payment processing</p>
+        </div>
+      )}
     </form>
   );
 };
