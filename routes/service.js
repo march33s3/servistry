@@ -78,6 +78,27 @@ router.get('/registry/:registryId', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/service/public/:id
+// @desc    Get service by ID (public access for contribution)
+// @access  Public
+router.get('/public/:id', async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    
+    if (!service) {
+      return res.status(404).json({ msg: 'Service not found' });
+    }
+
+    res.json(service);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Service not found' });
+    }
+    res.status(500).send('Server error');
+  }
+});
+
 // @route   GET api/service/:id
 // @desc    Get service by ID
 // @access  Private
