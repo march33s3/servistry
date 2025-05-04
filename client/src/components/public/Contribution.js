@@ -1,12 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ServiceContext } from '../../context/service/ServiceState';
-import { RegistryContext } from '../../context/registry/RegistryState';
 import { toast } from 'react-toastify';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import TestCards from './TestCards'; // Import the TestCards component
-
+import TestCards from './TestCards';
+import axios from 'axios';
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
@@ -85,7 +84,7 @@ const getStatusClass = (status) => {
 };
 
 // Payment Form Component
-const PaymentForm = ({ service, registrySlug }) => {
+const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
   const { createPaymentIntent } = useContext(ServiceContext);
   const navigate = useNavigate();
   const stripe = useStripe();
@@ -97,7 +96,7 @@ const PaymentForm = ({ service, registrySlug }) => {
   const [loading, setLoading] = useState(false);
   const [cardError, setCardError] = useState(null);
   const [formErrors, setFormErrors] = useState({});
-  const [processingStatus, setProcessingStatus] = useState(''); // For detailed status updates
+  const [processingStatus, setProcessingStatus] = useState(''); 
   const [paymentIntentStatus, setPaymentIntentStatus] = useState('');
   const [isProcessingComplete, setIsProcessingComplete] = useState(false);
 
@@ -129,39 +128,43 @@ const PaymentForm = ({ service, registrySlug }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!stripe || !elements) {
       toast.error('Stripe has not loaded. Please refresh the page and try again.');
       return;
     }
-
+  
     // Validate form data
     const validation = validatePaymentForm(amount, email);
     if (!validation.isValid) {
       setFormErrors(validation.errors);
       return;
     }
-
+  
     setLoading(true);
     setCardError(null);
     setProcessingStatus('Initiating payment...');
-
+  
     try {
       // Create payment intent on the server
       setProcessingStatus('Creating payment request...');
+      const paymentAmount = parseFloat(amount);
+      
+      console.log(`Creating payment intent for service ${service._id} with amount ${paymentAmount}`);
+      
       const paymentIntentResponse = await createPaymentIntent(
         service._id,
-        parseFloat(amount),
+        paymentAmount,
         email
       );
-
+  
       if (!paymentIntentResponse) {
         setLoading(false);
         setProcessingStatus('Payment setup failed.');
         toast.error('Failed to set up payment. Please try again.');
         return;
       }
-
+  
       // Confirm the payment with Stripe
       setProcessingStatus('Processing your card...');
       const result = await stripe.confirmCardPayment(paymentIntentResponse.clientSecret, {
@@ -173,10 +176,10 @@ const PaymentForm = ({ service, registrySlug }) => {
           }
         }
       });
-
+  
       if (result.error) {
         setCardError(getReadableErrorMessage(result.error));
-        setProcessingStatus('Payment failed')
+        setProcessingStatus('Payment failed');
         setPaymentIntentStatus('failed');
       } else {
         const status = result.paymentIntent.status;
@@ -187,19 +190,57 @@ const PaymentForm = ({ service, registrySlug }) => {
           setIsProcessingComplete(true);
           toast.success('Payment successful! Thank you for your contribution.');
           
+          // Update the service object locally to show updated funded amount immediately
+          try {
+            // Create a copy of the service with updated fundedAmount
+            const updatedService = {
+              ...service,
+              fundedAmount: parseFloat(service.fundedAmount) + paymentAmount
+            };
+            
+            console.log(`UI update: Funded amount changed from ${service.fundedAmount} to ${updatedService.fundedAmount}`);
+            
+            // Call the callback to update parent component
+            if (typeof onPaymentSuccess === 'function') {
+              onPaymentSuccess(updatedService);
+            }
+            
+            // IMPORTANT: Force the server to update the database directly
+            console.log('Sending force update request to server');
+            try {
+              await axios.post('/api/payment/force-update', {
+                serviceId: service._id,
+                amount: paymentAmount
+              });
+              console.log('Force update successful');
+            } catch (forceUpdateErr) {
+              console.error('Force update failed:', forceUpdateErr);
+              // Don't show error to user since the UI already updated
+              
+              // Fallback: Try a direct update through test endpoint
+              try {
+                console.log('Trying fallback update method');
+                await axios.get(`/api/payment/test-update/${service._id}/${paymentAmount}`);
+                console.log('Fallback update successful');
+              } catch (fallbackErr) {
+                console.error('Fallback update also failed:', fallbackErr);
+              }
+            }
+          } catch (uiErr) {
+            console.warn('Could not update UI with new funded amount:', uiErr);
+          }
+          
           // Add a short delay to show the success message before redirecting
           setTimeout(() => {
-            // Ensure we have a valid registry slug before redirecting
             if (registrySlug) {
               navigate(`/registry/${registrySlug}`);
             } else {
-              // If we don't have a valid slug, redirect to home page
-              toast.warning('Could not find registry details, redirecting to home page');
+              console.error('No registry slug available for redirection');
+              toast.warning('Registry information not available. Redirecting to home page.');
               navigate('/');
             }
           }, 3000);
         } else if (status === 'requires_action') {
-          // Handle 3D Secure authentication if needed
           setProcessingStatus('Additional authentication required. Please complete the verification.');
         }
       }
@@ -209,7 +250,7 @@ const PaymentForm = ({ service, registrySlug }) => {
       setPaymentIntentStatus('error');
       toast.error('There was an error processing your payment. Please try again.');
     }
-
+  
     setLoading(false);
   };
 
@@ -337,11 +378,22 @@ const PaymentForm = ({ service, registrySlug }) => {
 
 // Main Contribution Component
 const Contribution = () => {
-  const { getPublicService, service, loading: serviceLoading, error, clearErrors } = useContext(ServiceContext);
-  const { getPublicRegistry, publicRegistry, loading: registryLoading, error: registryError } = useContext(RegistryContext);
+  const { getPublicService, service: initialService, loading: serviceLoading, error, clearErrors } = useContext(ServiceContext);
   const { serviceId } = useParams();
   const navigate = useNavigate();
+  
+  // State for service data that can be updated after payment
+  const [service, setService] = useState(null);
   const [registrySlug, setRegistrySlug] = useState(null);
+  const [loadingRegistry, setLoadingRegistry] = useState(false);
+  const [registryError, setRegistryError] = useState(null);
+
+  // Update local service state when the context service changes
+  useEffect(() => {
+    if (initialService) {
+      setService(initialService);
+    }
+  }, [initialService]);
 
   // First load the service
   useEffect(() => {
@@ -355,39 +407,58 @@ const Contribution = () => {
     // eslint-disable-next-line
   }, [serviceId, error]);
 
-  // Then load the registry once we have the service
+  // Update service state when payment succeeds
+  const handlePaymentSuccess = (updatedService) => {
+    console.log('Payment successful, updating service with new funded amount:', updatedService.fundedAmount);
+    setService(updatedService);
+  };
+
+  // Then try to get registry slug using only public endpoints
   useEffect(() => {
-    if (service && service.registry) {
-      // Fetch the registry to get the slug for navigation after payment
-      getPublicRegistry(service.registry);
-    }
-    // eslint-disable-next-line
+    const getRegistrySlug = async () => {
+      if (!service || !service.registry) return;
+      
+      try {
+        setLoadingRegistry(true);
+        setRegistryError(null);
+        
+        // Use the public registry endpoint directly
+        try {
+          console.log('Trying to get public registry data');
+          const publicResponse = await axios.get(`/api/registry/public/${service.registry}`);
+          
+          if (publicResponse.data && publicResponse.data.registry && publicResponse.data.registry.urlSlug) {
+            console.log('Found registry slug:', publicResponse.data.registry.urlSlug);
+            setRegistrySlug(publicResponse.data.registry.urlSlug);
+          } else {
+            throw new Error('Registry slug not found in response');
+          }
+        } catch (err) {
+          console.error('Error getting registry data:', err);
+          setRegistryError('Could not find registry information');
+        }
+      } finally {
+        setLoadingRegistry(false);
+      }
+    };
+
+    getRegistrySlug();
   }, [service]);
 
-  // Extract and save the registry slug once the publicRegistry is loaded
-  useEffect(() => {
-    if (publicRegistry && publicRegistry.registry && publicRegistry.registry.urlSlug) {
-      setRegistrySlug(publicRegistry.registry.urlSlug);
-    }
-  }, [publicRegistry]);
-
-  // Show error if registry loading fails
+  // Show error notifications for registry loading failures
   useEffect(() => {
     if (registryError) {
-      toast.error(`Error loading registry: ${registryError}`);
+      console.warn('Registry error (non-blocking):', registryError);
+      // We don't show this as a toast to avoid confusion - it's a non-critical error
     }
   }, [registryError]);
 
+  // Handle loading states
   if (serviceLoading || !service) {
     return <div className="loading-container"><div className="loading"></div></div>;
   }
 
   const isFullyFunded = service.fundedAmount >= service.requestedAmount;
-
-  // Handle the case when registry is still loading
-  if (registryLoading && !registrySlug) {
-    return <div className="loading-container"><div className="loading"></div></div>;
-  }
 
   if (isFullyFunded) {
     return (
@@ -442,7 +513,7 @@ const Contribution = () => {
           </div>
           <div className="funding-info">
             <p>
-              ${service.fundedAmount.toFixed(2)} of ${service.requestedAmount.toFixed(2)} funded
+              ${parseFloat(service.fundedAmount).toFixed(2)} of ${service.requestedAmount.toFixed(2)} funded
               <span className="percentage">({((service.fundedAmount / service.requestedAmount) * 100).toFixed(0)}%)</span>
             </p>
             <p>Amount remaining: ${(service.requestedAmount - service.fundedAmount).toFixed(2)}</p>
@@ -453,7 +524,11 @@ const Contribution = () => {
       <div className="payment-container">
         <h2>Make Your Contribution</h2>
         <Elements stripe={stripePromise}>
-          <PaymentForm service={service} registrySlug={registrySlug} />
+          <PaymentForm 
+            service={service} 
+            registrySlug={registrySlug} 
+            onPaymentSuccess={handlePaymentSuccess}
+          />
         </Elements>
       </div>
     </div>

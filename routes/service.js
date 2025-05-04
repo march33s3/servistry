@@ -131,6 +131,44 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/service/details/:id
+// @desc    Get service details with registry info
+// @access  Public
+router.get('/details/:id', async (req, res) => {
+  try {
+    // Find the service
+    const service = await Service.findById(req.params.id);
+    
+    if (!service) {
+      return res.status(404).json({ msg: 'Service not found' });
+    }
+
+    // Find the registry
+    const registry = await Registry.findById(service.registry);
+    
+    if (!registry) {
+      return res.status(404).json({ msg: 'Registry not found' });
+    }
+
+    // Return both service and registry info
+    res.json({
+      service,
+      registry: {
+        _id: registry._id,
+        title: registry.title,
+        description: registry.description,
+        urlSlug: registry.urlSlug
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching service details:', err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Service not found' });
+    }
+    res.status(500).send('Server error');
+  }
+});
+
 // @route   PUT api/service/:id
 // @desc    Update service
 // @access  Private

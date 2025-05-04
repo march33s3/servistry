@@ -130,18 +130,31 @@ router.get('/:id', auth, async (req, res) => {
 // @access  Public
 router.get('/public/:slug', async (req, res) => {
   try {
-    const registry = await Registry.findOne({ urlSlug: req.params.slug });
+    console.log('Public registry request for slug:', req.params.slug);
+    
+    // First try to find by urlSlug (string)
+    let registry = await Registry.findOne({ urlSlug: req.params.slug });
+    
+    // If not found and the param could be an ID, try by ID
+    if (!registry && req.params.slug.match(/^[0-9a-fA-F]{24}$/)) {
+      console.log('Slug looks like an ID, trying to find by ID');
+      registry = await Registry.findById(req.params.slug);
+    }
     
     if (!registry) {
+      console.log('Registry not found for slug/id:', req.params.slug);
       return res.status(404).json({ msg: 'Registry not found' });
     }
 
+    console.log('Found registry:', registry.title);
+
     // Get services for this registry
     const services = await Service.find({ registry: registry._id }).sort({ createdAt: -1 });
+    console.log('Found', services.length, 'services');
 
     res.json({ registry, services });
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in public registry route:', err.message);
     res.status(500).send('Server error');
   }
 });

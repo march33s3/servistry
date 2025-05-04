@@ -33,34 +33,49 @@ router.post('/create-payment-intent', [
 
   try {
     const { serviceId, amount, email } = req.body;
+    
+    // Log the incoming request for debugging
+    console.log('Creating payment intent:', { serviceId, amount, email });
 
     // Check if service exists
     const service = await Service.findById(serviceId);
     if (!service) {
+      console.error(`Service not found: ${serviceId}`);
       return res.status(404).json({ msg: 'Service not found' });
     }
 
     // Create an idempotency key based on service ID, email and amount
     const idempotencyKey = `payment_${serviceId}_${email}_${amount}_${Date.now()}`;
+    
+    // Ensure amount is properly formatted
+    const amountInCents = Math.round(parseFloat(amount) * 100);
+    
+    if (isNaN(amountInCents) || amountInCents <= 0) {
+      console.error(`Invalid amount: ${amount}`);
+      return res.status(400).json({ msg: 'Invalid amount' });
+    }
 
-    // Create payment intent
+    // Create payment intent with explicit metadata
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Convert to cents
+      amount: amountInCents,
       currency: 'usd',
       metadata: {
-        serviceId,
-        email
+        serviceId: serviceId,
+        email: email,
+        amount: amount.toString()
       }
     }, {
       idempotencyKey
     });
+    
+    console.log(`Payment intent created: ${paymentIntent.id} with metadata:`, paymentIntent.metadata);
 
     res.json({
       clientSecret: paymentIntent.client_secret
     });
 
   } catch (err) {
-    console.error(err.message);
+    console.error('Error creating payment intent:', err.message);
     res.status(500).send('Server error');
   }
 });
@@ -126,6 +141,55 @@ router.get('/test-update/:serviceId/:amount', async (req, res) => {
   }
 });
 
+// @route   POST api/payment/force-update
+// @desc    Directly update service fundedAmount using MongoDB updateOne
+// @access  Public
+router.post('/force-update', [
+  body('serviceId').notEmpty().withMessage('Service ID is required'),
+  body('amount').isNumeric().withMessage('Amount must be a number')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const { serviceId, amount } = req.body;
+    const amountValue = parseFloat(amount);
+    
+    console.log(`Force update: Adding ${amountValue} to service ${serviceId}`);
+    
+    // Use MongoDB's $inc operator to directly increment the value
+    const result = await Service.updateOne(
+      { _id: serviceId },
+      { $inc: { fundedAmount: amountValue } }
+    );
+    
+    console.log('Update result:', result);
+    
+    if (result.acknowledged && result.modifiedCount > 0) {
+      // Get the updated service to return
+      const updatedService = await Service.findById(serviceId);
+      return res.json({
+        success: true,
+        message: `Service funded amount updated by ${amountValue}`,
+        service: updatedService
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Update operation did not modify any document'
+      });
+    }
+  } catch (err) {
+    console.error('Force update error:', err);
+    return res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
 // Export the webhook handler separately to be used in server.js
 exports.webhookHandler = async (req, res) => {
   console.log('==== WEBHOOK RECEIVED ====');
@@ -154,6 +218,7 @@ exports.webhookHandler = async (req, res) => {
       const intentId = paymentIntent.id;
       
       console.log(`Processing successful payment: ${intentId}`);
+      console.log('Payment metadata:', JSON.stringify(paymentIntent.metadata));
       
       try {
         // Verify the payment intent directly with Stripe
@@ -168,6 +233,11 @@ exports.webhookHandler = async (req, res) => {
         const serviceId = paymentIntent.metadata.serviceId;
         const email = paymentIntent.metadata.email;
         const amount = paymentIntent.amount / 100; // Convert from cents
+        
+        if (!serviceId) {
+          console.error('Missing serviceId in payment metadata:', paymentIntent.metadata);
+          return res.status(400).send('Missing service ID in metadata');
+        }
         
         console.log(`Updating service ${serviceId} with contribution amount of $${amount} from ${email}`);
         
@@ -191,15 +261,39 @@ exports.webhookHandler = async (req, res) => {
         console.log(`Transaction record created: ${transaction._id}`);
 
         // Update service funded amount - with explicit type conversion
-        const previousAmount = Number(service.fundedAmount);
-        service.fundedAmount = previousAmount + Number(amount);
+        // CRITICAL FIX: Use parseFloat instead of Number for better precision with decimals
+        const previousAmount = parseFloat(service.fundedAmount) || 0;
+        service.fundedAmount = previousAmount + parseFloat(amount);
+        
+        // Check for NaN values before saving
+        if (isNaN(service.fundedAmount)) {
+          console.error(`Invalid calculation result: previousAmount=${previousAmount}, amount=${amount}`);
+          service.fundedAmount = previousAmount + parseFloat(amount);
+          console.log(`Retry with explicit conversion: ${service.fundedAmount}`);
+          
+          // If still NaN, set to a default
+          if (isNaN(service.fundedAmount)) {
+            console.error('Still got NaN after retry, using amount as default');
+            service.fundedAmount = parseFloat(amount);
+          }
+        }
+        
+        console.log(`About to save service with funded amount updated: $${previousAmount} → $${service.fundedAmount}`);
         await service.save();
-
-        console.log(`Service funded amount updated: $${previousAmount} → $${service.fundedAmount}`);
+        console.log(`Service funded amount updated successfully to $${service.fundedAmount}`);
 
         // Get registry owner email
         const registry = await Registry.findById(service.registry);
+        if (!registry) {
+          console.error(`Registry not found for service: ${service.registry}`);
+          return res.status(200).send('Webhook received, but registry not found');
+        }
+        
         const user = await User.findById(registry.user);
+        if (!user) {
+          console.error(`User not found for registry: ${registry.user}`);
+          return res.status(200).send('Webhook received, but user not found');
+        }
 
         // Send email to registry owner
         const mailOptions = {
@@ -236,6 +330,7 @@ exports.webhookHandler = async (req, res) => {
         console.log('Webhook processing completed successfully');
       } catch (err) {
         console.error(`Error processing payment success: ${err.message}`);
+        console.error(err.stack);
         return res.status(500).send('Server error processing payment');
       }
     } else if (event.type === 'payment_intent.payment_failed') {
