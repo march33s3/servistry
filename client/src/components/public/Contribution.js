@@ -187,6 +187,15 @@ const PaymentForm = ({ service, registrySlug }) => {
           setIsProcessingComplete(true);
           toast.success('Payment successful! Thank you for your contribution.');
           
+
+          // Client-side fallback to update the service funded amount
+          try {
+            // Make a direct call to the test endpoint
+            const updateResponse = await fetch(`/api/payment/test-update/${service._id}/${amount}`);
+            console.log('Manual update response:', await updateResponse.json());
+          } catch (err) {
+            console.error('Failed to manually update service amount:', err);
+          }
           // Add a short delay to show the success message before redirecting
           setTimeout(() => {
             navigate(`/registry/${registrySlug}`);

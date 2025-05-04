@@ -15,6 +15,10 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
+app.post('/api/payment/webhook', express.raw({type: 'application/json'}), (req, res) => {
+  require('./routes/payment').webhookHandler(req, res);
+});
+
 app.use(express.json());
 
 // Connect to MongoDB
@@ -24,6 +28,12 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB connection error:', err));
+
+
+app.get('/api/test-webhook', (req, res) => {
+  console.log('Test endpoint hit');
+  res.status(200).send('Webhook endpoint is reachable');
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
