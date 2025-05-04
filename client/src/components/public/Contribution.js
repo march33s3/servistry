@@ -187,19 +187,17 @@ const PaymentForm = ({ service, registrySlug }) => {
           setIsProcessingComplete(true);
           toast.success('Payment successful! Thank you for your contribution.');
           
-
-          // Client-side fallback to update the service funded amount
-          try {
-            // Make a direct call to the test endpoint
-            const updateResponse = await fetch(`/api/payment/test-update/${service._id}/${amount}`);
-            console.log('Manual update response:', await updateResponse.json());
-          } catch (err) {
-            console.error('Failed to manually update service amount:', err);
-          }
           // Add a short delay to show the success message before redirecting
           setTimeout(() => {
-            navigate(`/registry/${registrySlug}`);
-          }, 2500);
+            // Ensure we have a valid registry slug before redirecting
+            if (registrySlug) {
+              navigate(`/registry/${registrySlug}`);
+            } else {
+              // If we don't have a valid slug, redirect to home page
+              toast.warning('Could not find registry details, redirecting to home page');
+              navigate('/');
+            }
+          }, 3000);
         } else if (status === 'requires_action') {
           // Handle 3D Secure authentication if needed
           setProcessingStatus('Additional authentication required. Please complete the verification.');
@@ -340,10 +338,12 @@ const PaymentForm = ({ service, registrySlug }) => {
 // Main Contribution Component
 const Contribution = () => {
   const { getPublicService, service, loading: serviceLoading, error, clearErrors } = useContext(ServiceContext);
-  const { getPublicRegistry, publicRegistry, loading: registryLoading } = useContext(RegistryContext);
+  const { getPublicRegistry, publicRegistry, loading: registryLoading, error: registryError } = useContext(RegistryContext);
   const { serviceId } = useParams();
   const navigate = useNavigate();
+  const [registrySlug, setRegistrySlug] = useState(null);
 
+  // First load the service
   useEffect(() => {
     getPublicService(serviceId);
 
@@ -355,6 +355,7 @@ const Contribution = () => {
     // eslint-disable-next-line
   }, [serviceId, error]);
 
+  // Then load the registry once we have the service
   useEffect(() => {
     if (service && service.registry) {
       // Fetch the registry to get the slug for navigation after payment
@@ -363,12 +364,30 @@ const Contribution = () => {
     // eslint-disable-next-line
   }, [service]);
 
-  if (serviceLoading || registryLoading || !service || !publicRegistry) {
+  // Extract and save the registry slug once the publicRegistry is loaded
+  useEffect(() => {
+    if (publicRegistry && publicRegistry.registry && publicRegistry.registry.urlSlug) {
+      setRegistrySlug(publicRegistry.registry.urlSlug);
+    }
+  }, [publicRegistry]);
+
+  // Show error if registry loading fails
+  useEffect(() => {
+    if (registryError) {
+      toast.error(`Error loading registry: ${registryError}`);
+    }
+  }, [registryError]);
+
+  if (serviceLoading || !service) {
     return <div className="loading-container"><div className="loading"></div></div>;
   }
 
   const isFullyFunded = service.fundedAmount >= service.requestedAmount;
-  const registrySlug = publicRegistry.registry.urlSlug;
+
+  // Handle the case when registry is still loading
+  if (registryLoading && !registrySlug) {
+    return <div className="loading-container"><div className="loading"></div></div>;
+  }
 
   if (isFullyFunded) {
     return (
@@ -376,8 +395,17 @@ const Contribution = () => {
         <div className="fully-funded-message">
           <h1>Service Fully Funded!</h1>
           <p>This service has already been fully funded. Thank you for your interest.</p>
-          <button onClick={() => navigate(`/registry/${registrySlug}`)} className="btn btn-primary">
-            Return to Registry
+          <button 
+            onClick={() => {
+              if (registrySlug) {
+                navigate(`/registry/${registrySlug}`);
+              } else {
+                navigate('/');
+              }
+            }} 
+            className="btn btn-primary"
+          >
+            {registrySlug ? 'Return to Registry' : 'Return to Home'}
           </button>
         </div>
       </div>
@@ -388,8 +416,17 @@ const Contribution = () => {
     <div className="contribution-container">
       <div className="contribution-header">
         <h1>Contribute to {service.title}</h1>
-        <button onClick={() => navigate(`/registry/${registrySlug}`)} className="btn btn-light">
-          <i className="fas fa-arrow-left"></i> Back to Registry
+        <button 
+          onClick={() => {
+            if (registrySlug) {
+              navigate(`/registry/${registrySlug}`);
+            } else {
+              navigate('/');
+            }
+          }} 
+          className="btn btn-light"
+        >
+          <i className="fas fa-arrow-left"></i> {registrySlug ? 'Back to Registry' : 'Back to Home'}
         </button>
       </div>
 
@@ -418,9 +455,6 @@ const Contribution = () => {
         <Elements stripe={stripePromise}>
           <PaymentForm service={service} registrySlug={registrySlug} />
         </Elements>
-        <div className="secure-payment-info">
-          <i className="fas fa-lock"></i> All payments are secure and encrypted
-        </div>
       </div>
     </div>
   );
