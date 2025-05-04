@@ -31,6 +31,8 @@ export const ServiceProvider = ({ children }) => {
     }
   };
 
+  
+
   // Get service by ID
   const getService = async (id) => {
     try {
@@ -44,6 +46,23 @@ export const ServiceProvider = ({ children }) => {
       dispatch({
         type: 'SERVICE_ERROR',
         payload: err.response.data.msg
+      });
+    }
+  };
+
+  // Get service by ID (public access for contributions)
+  const getPublicService = async (id) => {
+    try {
+      const res = await axios.get(`/api/service/public/${id}`);
+
+      dispatch({
+        type: 'GET_SERVICE',
+        payload: res.data
+      });
+    } catch (err) {
+      dispatch({
+        type: 'SERVICE_ERROR',
+        payload: err.response?.data?.msg || 'Error retrieving service'
       });
     }
   };
