@@ -168,6 +168,7 @@ export const ServiceProvider = ({ children }) => {
         error: state.error,
         getRegistryServices,
         getService,
+        getPublicService,
         createService,
         updateService,
         deleteService,

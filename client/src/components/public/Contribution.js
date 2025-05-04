@@ -330,13 +330,13 @@ const PaymentForm = ({ service, registrySlug }) => {
 
 // Main Contribution Component
 const Contribution = () => {
-  const { getService, service, loading: serviceLoading, error, clearErrors } = useContext(ServiceContext);
+  const { getPublicService, service, loading: serviceLoading, error, clearErrors } = useContext(ServiceContext);
   const { getPublicRegistry, publicRegistry, loading: registryLoading } = useContext(RegistryContext);
   const { serviceId } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    getService(serviceId);
+    getPublicService(serviceId);
 
     if (error) {
       toast.error(error);
