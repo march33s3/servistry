@@ -1,6 +1,6 @@
 // client/src/utils/registryUtils.js
 
-import axios from 'axios';
+import axios from '../config/api';
 
 /**
  * Get registry data by service ID using multiple fallback approaches
