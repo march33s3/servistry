@@ -1,5 +1,5 @@
 import React, { createContext, useReducer } from 'react';
-import axios from 'axios';
+import axios from '../../config/api';
 import serviceReducer from './serviceReducer';
 
 export const ServiceContext = createContext();

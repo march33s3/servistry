@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import TestCards from './TestCards';
-import axios from 'axios';
+import axios from '../../config/api';
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
