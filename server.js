@@ -17,7 +17,15 @@ const PORT = process.env.PORT || 5000;
 
 app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://theservistry.com',
+    'https://servistry.vercel.app',
+    process.env.FRONTEND_URL
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Connect to MongoDB
