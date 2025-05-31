@@ -112,41 +112,14 @@ router.get('/transactions/:serviceId', auth, async (req, res) => {
   }
 });
 
-
-// @route   GET api/payment/test-update/:serviceId/:amount
-// @desc    Test endpoint to manually update service funded amount
-// @access  Public (for testing only)
-router.get('/test-update/:serviceId/:amount', async (req, res) => {
-  try {
-    const { serviceId, amount } = req.params;
-    const service = await Service.findById(serviceId);
-    
-    if (!service) {
-      return res.status(404).json({ msg: 'Service not found' });
-    }
-    
-    // Update with explicit type conversion
-    const currentAmount = Number(service.fundedAmount);
-    service.fundedAmount = currentAmount + Number(amount);
-    await service.save();
-    
-    res.json({ 
-      success: true, 
-      message: `Service updated. Previous amount: ${currentAmount}, New amount: ${service.fundedAmount}`, 
-      service 
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 // @route   POST api/payment/force-update
-// @desc    Directly update service fundedAmount using MongoDB updateOne
-// @access  Public
+// @desc    Manually update service funded amount (for refunds/adjustments)
+// @access  Private (authenticated users only)
 router.post('/force-update', [
+  auth, // Require authentication
   body('serviceId').notEmpty().withMessage('Service ID is required'),
-  body('amount').isNumeric().withMessage('Amount must be a number')
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('reason').optional().isLength({ min: 1, max: 500 }).withMessage('Reason must be 1-500 characters')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -154,31 +127,97 @@ router.post('/force-update', [
   }
 
   try {
-    const { serviceId, amount } = req.body;
+    const { serviceId, amount, reason } = req.body;
     const amountValue = parseFloat(amount);
     
-    console.log(`Force update: Adding ${amountValue} to service ${serviceId}`);
+    console.log(`Manual update request: ${amountValue > 0 ? 'Adding' : 'Subtracting'} $${Math.abs(amountValue)} ${amountValue > 0 ? 'to' : 'from'} service ${serviceId}`);
+    if (reason) console.log(`Reason: ${reason}`);
     
-    // Use MongoDB's $inc operator to directly increment the value
-    const result = await Service.updateOne(
+    // Find the service
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Service not found' 
+      });
+    }
+
+    // Check if user owns the service (optional - remove if you want admin-only access)
+    const registry = await Registry.findById(service.registry);
+    if (!registry) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Registry not found' 
+      });
+    }
+
+    // Verify ownership (comment out these lines if you want any authenticated user to be able to update)
+    if (registry.user.toString() !== req.user.id) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Not authorized to update this service' 
+      });
+    }
+
+    // Store previous amount for logging
+    const previousAmount = parseFloat(service.fundedAmount) || 0;
+    
+    // Update the funded amount, ensuring it doesn't go below 0
+    const newAmount = Math.max(0, previousAmount + amountValue);
+    
+    // Use MongoDB's updateOne with $set to ensure the update happens
+    const updateResult = await Service.updateOne(
       { _id: serviceId },
-      { $inc: { fundedAmount: amountValue } }
+      { $set: { fundedAmount: newAmount } }
     );
     
-    console.log('Update result:', result);
+    console.log('MongoDB update result:', updateResult);
     
-    if (result.acknowledged && result.modifiedCount > 0) {
-      // Get the updated service to return
+    if (updateResult.acknowledged && updateResult.modifiedCount > 0) {
+      // Get the updated service to return current state
       const updatedService = await Service.findById(serviceId);
+      
+      console.log(`Service updated successfully: $${previousAmount} → $${updatedService.fundedAmount}`);
+      
+      // Optional: Send email notification to registry owner about manual adjustment
+      if (Math.abs(amountValue) > 0) {
+        try {
+          const user = await User.findById(registry.user);
+          const adjustmentType = amountValue > 0 ? 'contribution adjustment' : 'refund';
+          
+          const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: user.email,
+            subject: `Service Funding ${amountValue > 0 ? 'Increased' : 'Decreased'}`,
+            text: `A manual ${adjustmentType} of $${Math.abs(amountValue).toFixed(2)} has been applied to your service "${service.title}". ${reason ? `Reason: ${reason}` : ''} Your new funded amount is $${updatedService.fundedAmount.toFixed(2)}.`
+          };
+
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              console.log('Failed to send adjustment notification email:', error);
+            } else {
+              console.log('Adjustment notification email sent:', info.response);
+            }
+          });
+        } catch (emailError) {
+          console.error('Error sending notification email:', emailError);
+          // Don't fail the request if email fails
+        }
+      }
+      
       return res.json({
         success: true,
-        message: `Service funded amount updated by ${amountValue}`,
+        message: `Service funded amount ${amountValue > 0 ? 'increased' : 'decreased'} by $${Math.abs(amountValue).toFixed(2)}`,
+        previousAmount: previousAmount,
+        newAmount: updatedService.fundedAmount,
+        adjustment: amountValue,
         service: updatedService
       });
     } else {
       return res.status(400).json({
         success: false,
-        message: 'Update operation did not modify any document'
+        message: 'Update operation did not modify any document',
+        updateResult
       });
     }
   } catch (err) {
@@ -190,8 +229,11 @@ router.post('/force-update', [
   }
 });
 
+// @route   POST api/payment/webhook
+// @desc    Stripe webhook
+// @access  Public
 // Export the webhook handler separately to be used in server.js
-exports.webhookHandler = async (req, res) => {
+router.post('/webhook', async (req, res) => {
   console.log('==== WEBHOOK RECEIVED ====');
   console.log('Headers:', JSON.stringify(req.headers));
   console.log('Body type:', typeof req.body);
@@ -392,6 +434,6 @@ exports.webhookHandler = async (req, res) => {
 
   // Always return a 200 to acknowledge receipt of the webhook
   res.status(200).send('Webhook received');
-};
+});
 
 module.exports = router;

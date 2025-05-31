@@ -133,6 +133,12 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
       toast.error('Stripe has not loaded. Please refresh the page and try again.');
       return;
     }
+
+      // Prevent double submission
+    if (loading) {
+      console.log('Payment already in progress, ignoring duplicate submission');
+      return;
+    }
   
     // Validate form data
     const validation = validatePaymentForm(amount, email);
@@ -205,30 +211,9 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
               onPaymentSuccess(updatedService);
             }
             
-            // IMPORTANT: Force the server to update the database directly
-            console.log('Sending force update request to server');
-            try {
-              await axios.post('/api/payment/force-update', {
-                serviceId: service._id,
-                amount: paymentAmount
-              });
-              console.log('Force update successful');
-            } catch (forceUpdateErr) {
-              console.error('Force update failed:', forceUpdateErr);
-              // Don't show error to user since the UI already updated
-              
-              // Fallback: Try a direct update through test endpoint
-              try {
-                console.log('Trying fallback update method');
-                await axios.get(`/api/payment/test-update/${service._id}/${paymentAmount}`);
-                console.log('Fallback update successful');
-              } catch (fallbackErr) {
-                console.error('Fallback update also failed:', fallbackErr);
-              }
-            }
           } catch (uiErr) {
             console.warn('Could not update UI with new funded amount:', uiErr);
-          }
+          }// This is fine - the webhook will handle the real update
           
           // Add a short delay to show the success message before redirecting
           setTimeout(() => {
@@ -454,7 +439,7 @@ const Contribution = () => {
   }, [registryError]);
 
   // Handle loading states
-  if (serviceLoading || !service) {
+  if (serviceLoading || loadingRegistry || !service) {
     return <div className="loading-container"><div className="loading"></div></div>;
   }
 
