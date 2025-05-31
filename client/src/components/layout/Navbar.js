@@ -14,6 +14,11 @@ const Navbar = () => {
       <li>
         <Link to="/dashboard">Dashboard</Link>
       </li>
+      {user?.email === process.env.REACT_APP_ADMIN_EMAIL && (
+        <li>
+          <Link to="/admin">Admin</Link>
+        </li>
+    )}
       <li>
         <a href="#!" onClick={onLogout}>
           <i className="fas fa-sign-out-alt"></i> <span>Logout</span>

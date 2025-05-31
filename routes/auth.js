@@ -22,6 +22,8 @@ const transporter = nodemailer.createTransport({
 // @desc    Register a user
 // @access  Public
 router.post('/register', [
+  body('firstName').notEmpty().withMessage('First name is required'),
+  body('lastName').notEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Please include a valid email'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], async (req, res) => {
@@ -30,7 +32,7 @@ router.post('/register', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -40,8 +42,11 @@ router.post('/register', [
     }
 
     user = new User({
+      firstName,
+      lastName,
       email,
-      password
+      password,
+      userType: '' // Default empty string
     });
 
     // Hash password
@@ -55,7 +60,7 @@ router.post('/register', [
       from: process.env.EMAIL_FROM,
       to: user.email,
       subject: 'Account Creation Confirmation',
-      text: `Thank you for creating an account with our Gift Registry. You can now create your registry and start adding services.`
+      text: `Thank you for creating an account with Servistry. You can now create your registry and start adding services.`
     };
 
     transporter.sendMail(mailOptions, (error, info) => {

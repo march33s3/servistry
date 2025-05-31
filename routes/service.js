@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const Registry = require('../models/Registry');
 const Service = require('../models/Service');
 
+
 // @route   POST api/service
 // @desc    Create a service
 // @access  Private

@@ -8,6 +8,30 @@ const Transaction = require('../models/Transaction');
 const Registry = require('../models/Registry');
 const User = require('../models/User');
 const nodemailer = require('nodemailer');
+const admin = require('../middleware/admin');
+const rateLimit = require('express-rate-limit');
+const AuditLog = require('../models/AuditLog');
+
+// Create rate limiters (add this after your imports, before your routes)
+const adminRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 admin requests per 15 minutes
+  message: {
+    error: 'Too many admin requests from this IP, please try again later.',
+    retryAfter: '15 minutes'
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+const refundRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // limit each IP to 5 refund attempts per hour
+  message: {
+    error: 'Too many refund attempts from this IP, please try again later.',
+    retryAfter: '1 hour'
+  }
+});
 
 // Setup email transporter
 const transporter = nodemailer.createTransport({
@@ -84,24 +108,17 @@ router.post('/create-payment-intent', [
 // @route   GET api/payment/transactions/:serviceId
 // @desc    Get all transactions for a service
 // @access  Private
-router.get('/transactions/:serviceId', auth, async (req, res) => {
+router.get('/transactions/:serviceId', [adminRateLimit,auth,admin], async (req, res) => {
   try {
     const service = await Service.findById(req.params.serviceId);
     if (!service) {
       return res.status(404).json({ msg: 'Service not found' });
     }
 
-    // Check if user owns the registry
-    const registry = await Registry.findById(service.registry);
-    if (!registry) {
-      return res.status(404).json({ msg: 'Registry not found' });
-    }
-
-    if (registry.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'Not authorized' });
-    }
-
     const transactions = await Transaction.find({ service: req.params.serviceId }).sort({ createdAt: -1 });
+    
+    console.log(`Admin ${req.user.id} accessed transactions for service ${req.params.serviceId}`);
+
     res.json(transactions);
   } catch (err) {
     console.error(err.message);
@@ -112,41 +129,17 @@ router.get('/transactions/:serviceId', auth, async (req, res) => {
   }
 });
 
-
-// @route   GET api/payment/test-update/:serviceId/:amount
-// @desc    Test endpoint to manually update service funded amount
-// @access  Public (for testing only)
-router.get('/test-update/:serviceId/:amount', async (req, res) => {
-  try {
-    const { serviceId, amount } = req.params;
-    const service = await Service.findById(serviceId);
-    
-    if (!service) {
-      return res.status(404).json({ msg: 'Service not found' });
-    }
-    
-    // Update with explicit type conversion
-    const currentAmount = Number(service.fundedAmount);
-    service.fundedAmount = currentAmount + Number(amount);
-    await service.save();
-    
-    res.json({ 
-      success: true, 
-      message: `Service updated. Previous amount: ${currentAmount}, New amount: ${service.fundedAmount}`, 
-      service 
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 // @route   POST api/payment/force-update
-// @desc    Directly update service fundedAmount using MongoDB updateOne
-// @access  Public
+// @desc    Manually update service funded amount (for refunds/adjustments)
+// @access  Private (authenticated users only)
 router.post('/force-update', [
+  adminRateLimit,
+  auth, // Require authentication
+  admin,
+  adminRateLimit,
   body('serviceId').notEmpty().withMessage('Service ID is required'),
-  body('amount').isNumeric().withMessage('Amount must be a number')
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('reason').optional().isLength({ min: 1, max: 500 }).withMessage('Reason must be 1-500 characters')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -154,35 +147,133 @@ router.post('/force-update', [
   }
 
   try {
-    const { serviceId, amount } = req.body;
+    const { serviceId, amount, reason } = req.body;
     const amountValue = parseFloat(amount);
+
+    // ===== ADD AUDIT LOGGING HERE =====
+    // 1. Console logging (immediate)
+    console.log(`ADMIN ACTION: User ${req.user.id} updating service ${serviceId} by $${amountValue}. Reason: ${reason || 'No reason provided'}`);
     
-    console.log(`Force update: Adding ${amountValue} to service ${serviceId}`);
+    // 2. Get user details for better logging
+    const adminUser = await User.findById(req.user.id);
+    console.log(`ADMIN DETAILS: ${adminUser.email} (${adminUser.firstName} ${adminUser.lastName})`);
     
-    // Use MongoDB's $inc operator to directly increment the value
-    const result = await Service.updateOne(
+    // Find the service
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Service not found' 
+      });
+    }
+
+    // Check if user owns the service (optional - remove if you want admin-only access)
+    const registry = await Registry.findById(service.registry);
+    if (!registry) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Registry not found' 
+      });
+    }
+
+    // Verify ownership (comment out these lines if you want any authenticated user to be able to update)
+    if (registry.user.toString() !== req.user.id) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Not authorized to update this service' 
+      });
+    }
+
+    // Store previous amount for logging
+    const previousAmount = parseFloat(service.fundedAmount) || 0;
+    
+    // Update the funded amount, ensuring it doesn't go below 0
+    const newAmount = Math.max(0, previousAmount + amountValue);
+    
+    // Use MongoDB's updateOne with $set to ensure the update happens
+    const updateResult = await Service.updateOne(
       { _id: serviceId },
-      { $inc: { fundedAmount: amountValue } }
+      { $set: { fundedAmount: newAmount } }
     );
     
-    console.log('Update result:', result);
     
-    if (result.acknowledged && result.modifiedCount > 0) {
-      // Get the updated service to return
+    if (updateResult.acknowledged && updateResult.modifiedCount > 0) {
+
+      console.log(`SUCCESS: Service ${serviceId} updated from $${previousAmount} to $${newAmount}`);
+      console.log(`UPDATE DETAILS: Modified ${updateResult.modifiedCount} document(s)`);
+      
+      // Get the updated service to return current state
       const updatedService = await Service.findById(serviceId);
+      
+      const auditLog = new AuditLog({
+        adminUser: req.user.id,
+        action: 'service_update',
+        details: {
+          serviceId: serviceId,
+          amount: amountValue,
+          reason: reason || 'No reason provided',
+          previousValue: previousAmount,
+          newValue: newAmount
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        success: true
+      });
+
+      await auditLog.save();
+      console.log(`AUDIT: Logged action to database with ID ${auditLog._id}`);
+
+      // Optional: Send email notification to registry owner about manual adjustment
+      if (Math.abs(amountValue) > 0) {
+        try {
+          const user = await User.findById(registry.user);
+          const adjustmentType = amountValue > 0 ? 'contribution adjustment' : 'refund';
+          
+          const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: user.email,
+            subject: `Service Funding ${amountValue > 0 ? 'Increased' : 'Decreased'}`,
+            text: `A manual ${adjustmentType} of $${Math.abs(amountValue).toFixed(2)} has been applied to your service "${service.title}". ${reason ? `Reason: ${reason}` : ''} Your new funded amount is $${updatedService.fundedAmount.toFixed(2)}.`
+          };
+
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              console.log('Failed to send adjustment notification email:', error);
+            } else {
+              console.log('Adjustment notification email sent:', info.response);
+            }
+          });
+        } catch (emailError) {
+          console.error('Error sending notification email:', emailError);
+          // Don't fail the request if email fails
+        }
+      }
+      
       return res.json({
         success: true,
-        message: `Service funded amount updated by ${amountValue}`,
+        message: `Service funded amount ${amountValue > 0 ? 'increased' : 'decreased'} by $${Math.abs(amountValue).toFixed(2)}`,
+        previousAmount: previousAmount,
+        newAmount: updatedService.fundedAmount,
+        adjustment: amountValue,
         service: updatedService
       });
     } else {
+      // ===== FAILURE LOGGING =====
+      console.error(`FAILED: Update operation for service ${serviceId} did not modify any document`);
+      console.error(`UPDATE RESULT:`, updateResult);
+
       return res.status(400).json({
         success: false,
-        message: 'Update operation did not modify any document'
+        message: 'Update operation did not modify any document',
+        updateResult
       });
     }
   } catch (err) {
-    console.error('Force update error:', err);
+    // ===== ERROR LOGGING =====
+    console.error(`ERROR in force-update: ${err.message}`);
+    console.error(`ERROR DETAILS: User ${req.user.id}, Service ${req.body.serviceId}, Amount ${req.body.amount}`);
+    console.error(`STACK TRACE:`, err.stack);
+    
     return res.status(500).json({
       success: false,
       error: err.message
@@ -190,8 +281,11 @@ router.post('/force-update', [
   }
 });
 
+// @route   POST api/payment/webhook
+// @desc    Stripe webhook
+// @access  Public
 // Export the webhook handler separately to be used in server.js
-exports.webhookHandler = async (req, res) => {
+router.post('/webhook', async (req, res) => {
   console.log('==== WEBHOOK RECEIVED ====');
   console.log('Headers:', JSON.stringify(req.headers));
   console.log('Body type:', typeof req.body);
@@ -392,6 +486,6 @@ exports.webhookHandler = async (req, res) => {
 
   // Always return a 200 to acknowledge receipt of the webhook
   res.status(200).send('Webhook received');
-};
+});
 
 module.exports = router;
