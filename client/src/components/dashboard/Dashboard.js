@@ -27,7 +27,18 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>Dashboard</h1>
-        <p>Welcome{user ? `, ${user.email}` : ''}</p>
+        <p>Welcome{user ? `, ${user.firstName || user.email}` : ''}</p>
+        {user?.userType === 'admin' && (
+          <div className="admin-section">
+            <h3>Admin Tools</h3>
+            <div className="admin-buttons">
+              <Link to="/admin" className="btn btn-secondary">
+                <i className="fas fa-cog"></i> Admin Panel
+              </Link>
+            </div>
+          </div>
+        )}
+        
         <Link to="/create-registry" className="btn btn-primary">
           <i className="fas fa-plus"></i> Create Registry
         </Link>

@@ -8,12 +8,14 @@ const Register = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
 
-  const { email, password, confirmPassword } = formData;
+  const { firstName, lastName, email, password, confirmPassword } = formData;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -37,7 +39,7 @@ const Register = () => {
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
     } else {
-      register({ email, password });
+      register({ firstName, lastName, email, password });
     }
   };
 
@@ -47,6 +49,28 @@ const Register = () => {
         <h1>Create Account</h1>
         <p>Register to create your gift registry</p>
         <form onSubmit={onSubmit}>
+          <div className="form-group">
+            <label htmlFor="firstName">First Name</label>
+            <input
+              type="text"
+              name="firstName"
+              id="firstName"
+              value={firstName}
+              onChange={onChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <input
+              type="text"
+              name="lastName"
+              id="lastName"
+              value={lastName}
+              onChange={onChange}
+              required
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input

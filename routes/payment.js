@@ -8,6 +8,30 @@ const Transaction = require('../models/Transaction');
 const Registry = require('../models/Registry');
 const User = require('../models/User');
 const nodemailer = require('nodemailer');
+const admin = require('../middleware/admin');
+const rateLimit = require('express-rate-limit');
+const AuditLog = require('../models/AuditLog');
+
+// Create rate limiters (add this after your imports, before your routes)
+const adminRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 admin requests per 15 minutes
+  message: {
+    error: 'Too many admin requests from this IP, please try again later.',
+    retryAfter: '15 minutes'
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+const refundRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // limit each IP to 5 refund attempts per hour
+  message: {
+    error: 'Too many refund attempts from this IP, please try again later.',
+    retryAfter: '1 hour'
+  }
+});
 
 // Setup email transporter
 const transporter = nodemailer.createTransport({
@@ -84,24 +108,17 @@ router.post('/create-payment-intent', [
 // @route   GET api/payment/transactions/:serviceId
 // @desc    Get all transactions for a service
 // @access  Private
-router.get('/transactions/:serviceId', auth, async (req, res) => {
+router.get('/transactions/:serviceId', [adminRateLimit,auth,admin], async (req, res) => {
   try {
     const service = await Service.findById(req.params.serviceId);
     if (!service) {
       return res.status(404).json({ msg: 'Service not found' });
     }
 
-    // Check if user owns the registry
-    const registry = await Registry.findById(service.registry);
-    if (!registry) {
-      return res.status(404).json({ msg: 'Registry not found' });
-    }
-
-    if (registry.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'Not authorized' });
-    }
-
     const transactions = await Transaction.find({ service: req.params.serviceId }).sort({ createdAt: -1 });
+    
+    console.log(`Admin ${req.user.id} accessed transactions for service ${req.params.serviceId}`);
+
     res.json(transactions);
   } catch (err) {
     console.error(err.message);
@@ -116,7 +133,10 @@ router.get('/transactions/:serviceId', auth, async (req, res) => {
 // @desc    Manually update service funded amount (for refunds/adjustments)
 // @access  Private (authenticated users only)
 router.post('/force-update', [
+  adminRateLimit,
   auth, // Require authentication
+  admin,
+  adminRateLimit,
   body('serviceId').notEmpty().withMessage('Service ID is required'),
   body('amount').isNumeric().withMessage('Amount must be a number'),
   body('reason').optional().isLength({ min: 1, max: 500 }).withMessage('Reason must be 1-500 characters')
@@ -129,9 +149,14 @@ router.post('/force-update', [
   try {
     const { serviceId, amount, reason } = req.body;
     const amountValue = parseFloat(amount);
+
+    // ===== ADD AUDIT LOGGING HERE =====
+    // 1. Console logging (immediate)
+    console.log(`ADMIN ACTION: User ${req.user.id} updating service ${serviceId} by $${amountValue}. Reason: ${reason || 'No reason provided'}`);
     
-    console.log(`Manual update request: ${amountValue > 0 ? 'Adding' : 'Subtracting'} $${Math.abs(amountValue)} ${amountValue > 0 ? 'to' : 'from'} service ${serviceId}`);
-    if (reason) console.log(`Reason: ${reason}`);
+    // 2. Get user details for better logging
+    const adminUser = await User.findById(req.user.id);
+    console.log(`ADMIN DETAILS: ${adminUser.email} (${adminUser.firstName} ${adminUser.lastName})`);
     
     // Find the service
     const service = await Service.findById(serviceId);
@@ -171,14 +196,33 @@ router.post('/force-update', [
       { $set: { fundedAmount: newAmount } }
     );
     
-    console.log('MongoDB update result:', updateResult);
     
     if (updateResult.acknowledged && updateResult.modifiedCount > 0) {
+
+      console.log(`SUCCESS: Service ${serviceId} updated from $${previousAmount} to $${newAmount}`);
+      console.log(`UPDATE DETAILS: Modified ${updateResult.modifiedCount} document(s)`);
+      
       // Get the updated service to return current state
       const updatedService = await Service.findById(serviceId);
       
-      console.log(`Service updated successfully: $${previousAmount} → $${updatedService.fundedAmount}`);
-      
+      const auditLog = new AuditLog({
+        adminUser: req.user.id,
+        action: 'service_update',
+        details: {
+          serviceId: serviceId,
+          amount: amountValue,
+          reason: reason || 'No reason provided',
+          previousValue: previousAmount,
+          newValue: newAmount
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        success: true
+      });
+
+      await auditLog.save();
+      console.log(`AUDIT: Logged action to database with ID ${auditLog._id}`);
+
       // Optional: Send email notification to registry owner about manual adjustment
       if (Math.abs(amountValue) > 0) {
         try {
@@ -214,6 +258,10 @@ router.post('/force-update', [
         service: updatedService
       });
     } else {
+      // ===== FAILURE LOGGING =====
+      console.error(`FAILED: Update operation for service ${serviceId} did not modify any document`);
+      console.error(`UPDATE RESULT:`, updateResult);
+
       return res.status(400).json({
         success: false,
         message: 'Update operation did not modify any document',
@@ -221,7 +269,11 @@ router.post('/force-update', [
       });
     }
   } catch (err) {
-    console.error('Force update error:', err);
+    // ===== ERROR LOGGING =====
+    console.error(`ERROR in force-update: ${err.message}`);
+    console.error(`ERROR DETAILS: User ${req.user.id}, Service ${req.body.serviceId}, Amount ${req.body.amount}`);
+    console.error(`STACK TRACE:`, err.stack);
+    
     return res.status(500).json({
       success: false,
       error: err.message

@@ -22,6 +22,8 @@ import EditService from './components/service/EditService';
 import PublicRegistry from './components/public/PublicRegistry';
 import Contribution from './components/public/Contribution';
 import NotFound from './components/pages/NotFound';
+import AdminPanel from './components/admin/AdminPanel';
+import AdminRoute from './components/routing/AdminRoute';
 
 // Components
 import Navbar from './components/layout/Navbar';
@@ -53,6 +55,8 @@ const App = () => {
                   <Route path="/edit-service/:id" element={<PrivateRoute><EditService /></PrivateRoute>} />
                   <Route path="/registry/:slug" element={<PublicRegistry />} />
                   <Route path="/contribute/:serviceId" element={<Contribution />} />
+                  <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+                  <Route path="/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>

@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
 const Registry = require('../models/Registry');
 const Service = require('../models/Service');
+const User = require('../models/User');
 const slugify = require('slugify');
 const nodemailer = require('nodemailer');
 
