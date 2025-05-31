@@ -1,7 +1,7 @@
 {
   "name": "servistry",
   "version": "1.0.0",
-  "description": "Gift Registry Web Application",
+  "description": "Servistry the Registry for Services",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

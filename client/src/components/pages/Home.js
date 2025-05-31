@@ -16,7 +16,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <div className="home-content">
-        <h1>Welcome to GiftRegistry</h1>
+        <h1>Welcome to Servistry</h1>
         <p className="lead">
           Create your own registry and share it with friends and family.
         </p>
@@ -33,7 +33,7 @@ const Home = () => {
         <div className="feature">
           <i className="fas fa-clipboard-list"></i>
           <h3>Create Registries</h3>
-          <p>Create and manage multiple gift registries for any occasion.</p>
+          <p>Create and manage multiple registries for any occasion.</p>
         </div>
         <div className="feature">
           <i className="fas fa-share-alt"></i>
