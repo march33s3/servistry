@@ -47,7 +47,7 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-form-container">
         <h1>Create Account</h1>
-        <p>Register to create your gift registry</p>
+        <p>Register to create your registry</p>
         <form onSubmit={onSubmit}>
           <div className="form-group">
             <label htmlFor="firstName">First Name</label>

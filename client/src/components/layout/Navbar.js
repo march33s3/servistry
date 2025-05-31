@@ -43,7 +43,7 @@ const Navbar = () => {
       <div className="navbar-container">
         <h1>
           <Link to="/">
-            <i className="fas fa-gift"></i> GiftRegistry
+            <i className="fas fa-gift"></i> Servistry
           </Link>
         </h1>
         {isAuthenticated ? authLinks : guestLinks}
