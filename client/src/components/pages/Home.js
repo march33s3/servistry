@@ -1,6 +1,8 @@
 import React, { useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/auth/AuthState';
+import CategoryGrid from './CategoryGrid';
+import Testimonials from './Testimonials';
 
 const Home = () => {
   const { isAuthenticated } = useContext(AuthContext);
@@ -46,6 +48,8 @@ const Home = () => {
           <p>Contributors can securely contribute to your desired services.</p>
         </div>
       </div>
+      <CategoryGrid />
+      <Testimonials />
     </div>
   );
 };

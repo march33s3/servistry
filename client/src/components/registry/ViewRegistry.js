@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { RegistryContext } from '../../context/registry/RegistryState';
 import { ServiceContext } from '../../context/service/ServiceState';
@@ -10,6 +10,7 @@ const ViewRegistry = () => {
   const { services, getRegistryServices, error: serviceError, clearErrors: clearServiceErrors } = useContext(ServiceContext);
   const { id } = useParams();
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     getRegistry(id);
@@ -58,15 +59,19 @@ const ViewRegistry = () => {
                 value={`${window.location.origin}/registry/${registry.urlSlug}`}
                 readOnly
               />
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/registry/${registry.urlSlug}`);
-                  toast.info('Link copied to clipboard');
-                }}
-                className="btn btn-light btn-sm"
-              >
-                <i className="fas fa-copy"></i> Copy
-              </button>
+              <div className="copy-btn-wrapper">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/registry/${registry.urlSlug}`);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1500);
+                  }}
+                  className="btn btn-light btn-sm"
+                >
+                  <i className="fas fa-copy"></i> Copy
+                </button>
+                <span className={`copy-tooltip${copied ? ' show' : ''}`}>Copied!</span>
+              </div>
             </div>
           </div>
         </div>
