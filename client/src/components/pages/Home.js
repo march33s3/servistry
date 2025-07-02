@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/auth/AuthState';
 import CategoryGrid from './CategoryGrid';
 import Testimonials from './Testimonials';
+import Button from '../ui/Button';
 
 const Home = () => {
   const { isAuthenticated } = useContext(AuthContext);
@@ -23,11 +24,11 @@ const Home = () => {
           Create your own registry and share it with friends and family.
         </p>
         <div className="home-buttons">
-          <Link to="/register" className="btn btn-primary">
-            Create a Registry
+          <Link to="/register">
+            <Button>Create a Registry</Button>
           </Link>
-          <Link to="/login" className="btn btn-light">
-            Sign In
+          <Link to="/login">
+            <Button variant="light">Sign In</Button>
           </Link>
         </div>
       </div>
