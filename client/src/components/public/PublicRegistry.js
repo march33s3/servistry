@@ -2,8 +2,6 @@ import React, { useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { RegistryContext } from '../../context/registry/RegistryState';
 import { toast } from 'react-toastify';
-import Button from '../ui/Button';
-import ProgressBar from '../ui/ProgressBar';
 
 const PublicRegistry = () => {
   const { getPublicRegistry, publicRegistry, loading, error, clearErrors } = useContext(RegistryContext);
@@ -51,7 +49,12 @@ const PublicRegistry = () => {
                 </div>
                 <p className="description">{service.description}</p>
                 <div className="funding-progress">
-                  <ProgressBar value={progressPercentage} />
+                  <div className="progress-bar">
+                    <div 
+                      className="progress" 
+                      style={{ width: `${progressPercentage > 100 ? 100 : progressPercentage}%` }}
+                    ></div>
+                  </div>
                   <div className="funding-info">
                     <p>
                       ${service.fundedAmount.toFixed(2)} of ${service.requestedAmount.toFixed(2)} funded
@@ -60,10 +63,8 @@ const PublicRegistry = () => {
                   </div>
                 </div>
                 {!isFullyFunded && (
-                  <Link to={`/contribute/${service._id}`} style={{ textDecoration: 'none' }}>
-                    <Button style={{ width: '100%', marginBottom: '0.5rem' }}>
-                      Contribute
-                    </Button>
+                  <Link to={`/contribute/${service._id}`} className="btn btn-primary btn-block">
+                    Contribute
                   </Link>
                 )}
                 {isFullyFunded && (
