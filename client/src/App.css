@@ -1,17 +1,17 @@
 /* File: client/src/App.css */
 :root {
-  --color-primary: #4b6cb7;
-  --color-primary-dark: #3a5ba6;
-  --color-secondary: #182848;
-  --color-light: #f4f7fd;
-  --color-dark: #333;
-  --color-danger: #dc3545;
-  --color-success: #28a745;
-  --color-gray: #888;
-  --color-light-gray: #ddd;
+  --primary-color: #4b6cb7;
+  --primary-dark: #3a5ba6;
+  --secondary-color: #182848;
+  --light-color: #f4f7fd;
+  --dark-color: #333;
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+  --gray-color: #888;
+  --light-gray: #ddd;
   --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
-  --color-accent: #f7b733;
+  --accent-color: #f7b733;
 }
 
 * {
@@ -25,18 +25,18 @@ body {
   font-size: 16px;
   line-height: 1.6;
   background-color: #f8f9fa;
-  color: var(--color-dark);
+  color: var(--dark-color);
   min-height: 100vh;
 }
 
 a {
   text-decoration: none;
-  color: var(--color-primary);
+  color: var(--primary-color);
   transition: var(--transition);
 }
 
 a:hover {
-  color: var(--color-primary-dark);
+  color: var(--primary-dark);
 }
 
 ul {
@@ -77,20 +77,20 @@ button {
 }
 
 .btn-primary {
-  background-color: var(--color-accent);
+  background-color: var(--accent-color);
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: var(--color-accent);
+  background-color: var(--accent-color);
   filter: brightness(0.9);
   color: white;
 }
 
 .btn-light {
-  background-color: var(--color-light);
-  color: var(--color-dark);
-  border: 1px solid var(--color-light-gray);
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  border: 1px solid var(--light-gray);
 }
 
 .btn-light:hover {
@@ -98,7 +98,7 @@ button {
 }
 
 .btn-danger {
-  background-color: var(--color-danger);
+  background-color: var(--danger-color);
   color: white;
 }
 
@@ -124,7 +124,7 @@ button {
 
 /* Navbar */
 .navbar {
-  background-color: var(--color-primary);
+  background-color: var(--primary-color);
   color: white;
   padding: 1rem 0;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -145,7 +145,7 @@ button {
 }
 
 .navbar a:hover {
-  color: var(--color-light);
+  color: var(--light-color);
 }
 
 .navbar ul {
@@ -154,7 +154,7 @@ button {
 
 /* Footer */
 .footer {
-  background-color: var(--color-secondary);
+  background-color: var(--secondary-color);
   color: white;
   text-align: center;
   padding: 1.5rem 0;
@@ -176,8 +176,8 @@ button {
 }
 
 .loading {
-  border: 5px solid var(--color-light-gray);
-  border-top: 5px solid var(--color-primary);
+  border: 5px solid var(--light-gray);
+  border-top: 5px solid var(--primary-color);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -214,7 +214,7 @@ button {
 .form-group select {
   width: 100%;
   padding: 0.8rem;
-  border: 1px solid var(--color-light-gray);
+  border: 1px solid var(--light-gray);
   border-radius: 4px;
   font-size: 1rem;
 }
@@ -258,7 +258,7 @@ button {
 
 .auth-form-container p {
   margin-bottom: 1.5rem;
-  color: var(--color-gray);
+  color: var(--gray-color);
   text-align: center;
 }
 
@@ -284,7 +284,7 @@ button {
 .home-content .lead {
   font-size: 1.2rem;
   margin-bottom: 2rem;
-  color: var(--color-gray);
+  color: var(--gray-color);
 }
 
 .home-buttons {
@@ -314,7 +314,7 @@ button {
 
 .feature i {
   font-size: 2.5rem;
-  color: var(--color-primary);
+  color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
@@ -345,7 +345,7 @@ button {
 
 .category-card i {
   font-size: 2rem;
-  color: var(--color-accent);
+  color: var(--accent-color);
   margin-bottom: 0.5rem;
 }
 
@@ -389,12 +389,12 @@ button {
 
 .dashboard-header p {
   margin-bottom: 1rem;
-  color: var(--color-gray);
+  color: var(--gray-color);
 }
 
 .registries-container h2 {
   margin-bottom: 1rem;
-  border-bottom: 1px solid var(--color-light-gray);
+  border-bottom: 1px solid var(--light-gray);
   padding-bottom: 0.5rem;
 }
 
@@ -418,12 +418,12 @@ button {
 }
 
 .registry-info .description {
-  color: var(--color-dark);
+  color: var(--dark-color);
   margin-bottom: 0.5rem;
 }
 
 .registry-info .created-date {
-  color: var(--color-gray);
+  color: var(--gray-color);
   font-size: 0.9rem;
 }
 
@@ -444,7 +444,7 @@ button {
 .share-link input {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid var(--color-light-gray);
+  border: 1px solid var(--light-gray);
   border-radius: 4px 0 0 4px;
   font-size: 0.9rem;
 }
@@ -462,7 +462,7 @@ button {
   position: absolute;
   right: 0;
   bottom: calc(100% + 5px);
-  background-color: var(--color-dark);
+  background-color: var(--dark-color);
   color: #fff;
   padding: 2px 6px;
   border-radius: 3px;
@@ -501,7 +501,7 @@ button {
 }
 
 .registry-header p {
-  color: var(--color-dark);
+  color: var(--dark-color);
   margin-bottom: 1.5rem;
 }
 
@@ -524,7 +524,7 @@ button {
 
 .services-container h2 {
   margin-bottom: 1rem;
-  border-bottom: 1px solid var(--color-light-gray);
+  border-bottom: 1px solid var(--light-gray);
   padding-bottom: 0.5rem;
 }
 
@@ -565,7 +565,7 @@ button {
 .progress-bar {
   width: 100%;
   height: 10px;
-  background-color: var(--color-light-gray);
+  background-color: var(--light-gray);
   border-radius: 5px;
   overflow: hidden;
   margin-bottom: 0.5rem;
@@ -573,7 +573,7 @@ button {
 
 .progress {
   height: 100%;
-  background-color: var(--color-primary);
+  background-color: var(--primary-color);
   border-radius: 5px;
 }
 
@@ -617,7 +617,7 @@ button {
 .fully-funded {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background-color: var(--color-success);
+  background-color: var(--success-color);
   color: white;
   border-radius: 4px;
   margin-top: 1rem;
@@ -657,14 +657,14 @@ button {
 }
 
 .card-element-container {
-  border: 1px solid var(--color-light-gray);
+  border: 1px solid var(--light-gray);
   padding: 0.8rem;
   border-radius: 4px;
   margin-bottom: 1rem;
 }
 
 .card-error {
-  color: var(--color-danger);
+  color: var(--danger-color);
   font-size: 0.9rem;
   margin-top: 0.5rem;
 }
@@ -672,7 +672,7 @@ button {
 .secure-payment-info {
   text-align: center;
   margin-top: 1.5rem;
-  color: var(--color-gray);
+  color: var(--gray-color);
   font-size: 0.9rem;
 }
 
@@ -689,7 +689,7 @@ button {
 }
 
 .fully-funded-message h1 {
-  color: var(--color-success);
+  color: var(--success-color);
   margin-bottom: 1rem;
 }
 
@@ -710,7 +710,7 @@ button {
 
 .not-found p {
   margin-bottom: 1.5rem;
-  color: var(--color-gray);
+  color: var(--gray-color);
 }
 
 /* Media Queries */
@@ -770,7 +770,7 @@ button {
     margin: 15px 0;
     padding: 10px 15px;
     background-color: #f8f9fa;
-    border-left: 3px solid var(--color-primary);
+    border-left: 3px solid var(--primary-color);
     border-radius: 3px;
     display: flex;
     align-items: center;
@@ -779,18 +779,18 @@ button {
   }
 
   .payment-status.success {
-    border-left-color: var(--color-success);
+    border-left-color: var(--success-color);
     background-color: #f0fff0;
   }
 
   .payment-status.error {
-    border-left-color: var(--color-danger);
+    border-left-color: var(--danger-color);
     background-color: #fff0f0;
   }
 
   .processing-spinner {
     border: 2px solid #f3f3f3;
-    border-top: 2px solid var(--color-primary);
+    border-top: 2px solid var(--primary-color);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -838,19 +838,19 @@ button {
   }
 
   .form-group input.error {
-    border-color: var(--color-danger);
+    border-color: var(--danger-color);
     background-color: #fff9f9;
   }
   
   .form-error {
-    color: var(--color-danger);
+    color: var(--danger-color);
     font-size: 0.85rem;
     margin-top: 5px;
   }
   
   /* Card Element Container - Enhanced */
   .card-element-container {
-    border: 1px solid var(--color-light-gray);
+    border: 1px solid var(--light-gray);
     padding: 15px;
     border-radius: 4px;
     background-color: white;
@@ -858,12 +858,12 @@ button {
   }
   
   .card-element-container:focus-within {
-    border-color: var(--color-primary);
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(75, 108, 183, 0.2);
   }
   
   .card-error {
-    color: var(--color-danger);
+    color: var(--danger-color);
     margin-top: 8px;
     font-size: 0.9rem;
   }
@@ -874,7 +874,7 @@ button {
     align-items: center;
     justify-content: center;
     margin-top: 20px;
-    color: var(--color-gray);
+    color: var(--gray-color);
     gap: 8px;
     font-size: 0.9rem;
   }
@@ -882,14 +882,14 @@ button {
   /* Test Cards Section - New */
   .test-cards-section {
     margin-top: 20px;
-    border-top: 1px dashed var(--color-light-gray);
+    border-top: 1px dashed var(--light-gray);
     padding-top: 15px;
   }
   
   .test-cards-toggle {
     background: none;
     border: none;
-    color: var(--color-primary);
+    color: var(--primary-color);
     padding: 5px 0;
     cursor: pointer;
     font-size: 0.9rem;
@@ -900,7 +900,7 @@ button {
   }
   
   .test-cards-toggle:hover {
-    color: var(--color-primary-dark);
+    color: var(--primary-dark);
     text-decoration: underline;
   }
   
@@ -930,7 +930,7 @@ button {
     margin-bottom: 5px;
     background-color: white;
     border-radius: 4px;
-    border: 1px solid var(--color-light-gray);
+    border: 1px solid var(--light-gray);
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
@@ -938,7 +938,7 @@ button {
   
   .test-card-item:hover {
     background-color: #f1f3f9;
-    border-color: var(--color-primary);
+    border-color: var(--primary-color);
   }
   
   .test-card-number {
@@ -947,13 +947,13 @@ button {
   }
   
   .test-card-description {
-    color: var(--color-gray);
+    color: var(--gray-color);
     font-style: italic;
   }
   
   .copy-indicator {
     font-size: 0.8rem;
-    color: var(--color-primary);
+    color: var(--primary-color);
     opacity: 0;
     transition: opacity 0.2s ease;
   }
@@ -966,7 +966,7 @@ button {
     content: 'Copied!';
     position: absolute;
     right: 10px;
-    color: var(--color-success);
+    color: var(--success-color);
     font-weight: bold;
     animation: fade-out 1s forwards;
   }
@@ -979,7 +979,7 @@ button {
   
   .test-cards-note {
     font-style: italic;
-    color: var(--color-gray);
+    color: var(--gray-color);
     text-align: center;
     font-size: 0.8rem;
   }

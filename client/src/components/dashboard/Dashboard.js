@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Button from '../ui/Button';
 import { AuthContext } from '../../context/auth/AuthState';
 import { RegistryContext } from '../../context/registry/RegistryState';
 import RegistryItem from '../registry/RegistryItem';
@@ -33,19 +32,15 @@ const Dashboard = () => {
           <div className="admin-section">
             <h3>Admin Tools</h3>
             <div className="admin-buttons">
-              <Link to="/admin">
-                <Button variant="secondary">
-                  <i className="fas fa-cog"></i> Admin Panel
-                </Button>
+              <Link to="/admin" className="btn btn-secondary">
+                <i className="fas fa-cog"></i> Admin Panel
               </Link>
             </div>
           </div>
         )}
         
-        <Link to="/create-registry">
-          <Button>
-            <i className="fas fa-plus"></i> Create Registry
-          </Button>
+        <Link to="/create-registry" className="btn btn-primary">
+          <i className="fas fa-plus"></i> Create Registry
         </Link>
       </div>
 
