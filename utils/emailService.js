@@ -130,4 +130,4 @@ The Servistry Team
 module.exports = {
   sendPersonalizedWelcomeEmail,
   getEmailToneFromEmotion // Export in case other parts need it
-};
+}; 
