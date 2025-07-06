@@ -49,6 +49,26 @@ export default (state, action) => {
         ...state,
         error: null
       };
+    case 'PROFILE_UPDATE_SUCCESS':
+      return {
+        ...state,
+        user: action.payload,
+        loading: false,
+        error: null
+      };
+    case 'PASSWORD_UPDATE_SUCCESS':
+      return {
+        ...state,
+        loading: false,
+        error: null
+      };
+    case 'PROFILE_UPDATE_FAIL':
+    case 'PASSWORD_UPDATE_FAIL':
+      return {
+        ...state,
+        loading: false,
+        error: action.payload
+      };
     default:
       return state;
   }

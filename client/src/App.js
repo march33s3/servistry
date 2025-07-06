@@ -11,6 +11,7 @@ import PrivateRoute from './components/routing/PrivateRoute';
 import Home from './components/pages/Home';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import Profile from './components/auth/Profile';
 import GuestRegistryFlow from './components/onboarding/GuestRegistryFlow';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
@@ -57,6 +58,7 @@ const App = () => {
                   <Route path="/registry/:slug" element={<PublicRegistry />} />
                   <Route path="/contribute/:serviceId" element={<Contribution />} />
                   <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+                  <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
                   <Route path="/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

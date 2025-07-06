@@ -207,6 +207,134 @@ router.post('/register', [
   }
 });
 
+// @route   PUT api/auth/profile
+// @desc    Update user profile
+// @access  Private
+router.put('/profile', [
+  auth,
+  body('firstName').notEmpty().withMessage('First name is required'),
+  body('lastName').notEmpty().withMessage('Last name is required'),
+  body('email').isEmail().withMessage('Please include a valid email')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { firstName, lastName, email } = req.body;
+
+  try {
+    // Check if email is being changed and if it's already taken by another user
+    const existingUser = await User.findOne({ email });
+    if (existingUser && existingUser._id.toString() !== req.user.id) {
+      return res.status(400).json({ msg: 'Email is already registered to another account' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Store old email for notification
+    const oldEmail = user.email;
+    const emailChanged = oldEmail !== email;
+
+    // Update user fields
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.email = email;
+
+    await user.save();
+
+    // Send email notification if email was changed
+    if (emailChanged) {
+      // Notify old email
+      const oldEmailOptions = {
+        from: process.env.EMAIL_FROM,
+        to: oldEmail,
+        subject: 'Email Address Changed',
+        text: `Your Servistry account email has been changed from ${oldEmail} to ${email}. If you did not make this change, please contact support immediately.`
+      };
+
+      // Notify new email
+      const newEmailOptions = {
+        from: process.env.EMAIL_FROM,
+        to: email,
+        subject: 'Email Address Updated',
+        text: `Your Servistry account email has been successfully updated to ${email}.`
+      };
+
+      transporter.sendMail(oldEmailOptions);
+      transporter.sendMail(newEmailOptions);
+    }
+
+    // Return updated user without password
+    const updatedUser = await User.findById(req.user.id).select('-password');
+    res.json(updatedUser);
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// @route   PUT api/auth/password
+// @desc    Update user password
+// @access  Private
+router.put('/password', [
+  auth,
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    await user.save();
+
+    // Send email notification
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: 'Password Changed',
+      text: `Your Servistry account password has been successfully changed. If you did not make this change, please contact support immediately.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Failed to send password change notification:', error);
+      } else {
+        console.log('Password change notification sent:', info.response);
+      }
+    });
+
+    res.json({ msg: 'Password updated successfully' });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // routes/auth.js - Add this new route
 router.post('/register-with-registry', [
   body('firstName').notEmpty().withMessage('First name is required'),

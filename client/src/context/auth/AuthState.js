@@ -150,6 +150,59 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Update Profile
+const updateProfile = async (profileData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  try {
+    const res = await axios.put('/api/auth/profile', profileData, config);
+
+    dispatch({
+      type: 'PROFILE_UPDATE_SUCCESS',
+      payload: res.data
+    });
+
+    return true;
+  } catch (err) {
+    console.error('Profile update failed:', err);
+    dispatch({
+      type: 'PROFILE_UPDATE_FAIL',
+      payload: err.response?.data?.msg || 'Failed to update profile'
+    });
+    return false;
+  }
+};
+
+// Update Password
+const updatePassword = async (currentPassword, newPassword) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  try {
+    await axios.put('/api/auth/password', { currentPassword, newPassword }, config);
+
+    dispatch({
+      type: 'PASSWORD_UPDATE_SUCCESS'
+    });
+
+    return true;
+  } catch (err) {
+    console.error('Password update failed:', err);
+    dispatch({
+      type: 'PASSWORD_UPDATE_FAIL',
+      payload: err.response?.data?.msg || 'Failed to update password'
+    });
+    return false;
+  }
+};
+
   // Logout
   const logout = () => {
     dispatch({ type: 'LOGOUT' });
@@ -166,6 +219,8 @@ export const AuthProvider = ({ children }) => {
         loading: state.loading,
         user: state.user,
         error: state.error,
+        updateProfile,
+        updatePassword,
         register,
         loadUser,
         login,
