@@ -8,6 +8,8 @@ const EditService = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // LOCAL loading state for form submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -44,6 +46,7 @@ const EditService = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     const updatedService = await updateService(id, formData);
     
@@ -53,9 +56,11 @@ const EditService = () => {
     } else {
       toast.error(error || 'Failed to update service');
       clearErrors();
+      setIsSubmitting(false); // Reset on error
     }
   };
 
+  // Keep global loading for data fetching
   if (loading || !service) {
     return <div className="loading-container"><div className="loading"></div></div>;
   }
@@ -65,7 +70,7 @@ const EditService = () => {
       <h1>Edit Service</h1>
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label htmlFor="title">Title</label>
+          <label htmlFor="title">Service Title</label>
           <input
             type="text"
             name="title"
@@ -86,19 +91,18 @@ const EditService = () => {
           ></textarea>
         </div>
         <div className="form-group">
-          <label htmlFor="link">Link to Service</label>
+          <label htmlFor="link">Service Link</label>
           <input
             type="url"
             name="link"
             id="link"
             value={link}
             onChange={onChange}
-            placeholder="https://example.com"
             required
           />
         </div>
         <div className="form-group">
-          <label htmlFor="requestedAmount">Requested Amount ($)</label>
+          <label htmlFor="requestedAmount">Funding Goal ($)</label>
           <input
             type="number"
             name="requestedAmount"
@@ -111,8 +115,19 @@ const EditService = () => {
           />
         </div>
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary">Update Service</button>
-          <button type="button" className="btn btn-light" onClick={() => navigate(`/view-registry/${service.registry}`)}>
+          <button 
+            type="submit" 
+            className={`btn btn-primary ${isSubmitting ? 'btn-loading' : ''}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Updating Service...' : 'Update Service'}
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-light" 
+            onClick={() => navigate(`/view-registry/${service.registry}`)}
+            disabled={isSubmitting}
+          >
             Cancel
           </button>
         </div>

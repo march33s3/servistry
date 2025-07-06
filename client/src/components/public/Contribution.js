@@ -10,7 +10,161 @@ import axios from '../../config/api';
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
-// Utility functions for Stripe integration
+// ===== ENHANCED TRUST COMPONENTS - ADD THESE =====
+
+// 1. Trust Indicators Component
+const TrustIndicators = () => (
+  <div style={{ 
+    background: 'var(--color-bg-mint)', 
+    padding: '1rem', 
+    borderRadius: 'var(--radius-md)',
+    margin: '1rem 0',
+    border: '1px solid rgba(210, 175, 64, 0.2)'
+  }}>
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '0.5rem',
+      marginBottom: '0.5rem'
+    }}>
+      <i className="fas fa-shield-alt" style={{ color: 'var(--color-success)' }}></i>
+      <strong style={{ color: 'var(--color-text-primary)' }}>Secure Payment</strong>
+    </div>
+    <ul style={{ 
+      listStyle: 'none', 
+      padding: 0, 
+      margin: 0,
+      fontSize: '0.875rem',
+      color: 'var(--color-text-secondary)'
+    }}>
+      <li style={{ marginBottom: '0.25rem' }}>
+        <i className="fas fa-check" style={{ color: 'var(--color-success)', marginRight: '0.5rem' }}></i>
+        Payments processed by Stripe (industry leader)
+      </li>
+      <li style={{ marginBottom: '0.25rem' }}>
+        <i className="fas fa-check" style={{ color: 'var(--color-success)', marginRight: '0.5rem' }}></i>
+        Your card information is never stored
+      </li>
+      <li>
+        <i className="fas fa-check" style={{ color: 'var(--color-success)', marginRight: '0.5rem' }}></i>
+        SSL encrypted and PCI compliant
+      </li>
+    </ul>
+  </div>
+);
+
+// 2. Amount Suggestions Component
+const AmountSuggestions = ({ remainingAmount, onSelectAmount }) => {
+  const suggestions = [];
+  const remaining = parseFloat(remainingAmount);
+  
+  if (remaining >= 25) suggestions.push(25);
+  if (remaining >= 50) suggestions.push(50);
+  if (remaining >= 100) suggestions.push(100);
+  if (remaining > 100) {
+    suggestions.push(Math.ceil(remaining / 4)); // 25% of remaining
+    suggestions.push(Math.ceil(remaining / 2)); // 50% of remaining
+  }
+  suggestions.push(remaining); // Full amount
+  
+  // Remove duplicates and sort
+  const uniqueSuggestions = [...new Set(suggestions)].sort((a, b) => a - b);
+  
+  if (uniqueSuggestions.length <= 1) return null;
+  
+  return (
+    <div style={{ margin: '1rem 0' }}>
+      <p style={{ 
+        fontSize: '0.875rem', 
+        color: 'var(--color-text-secondary)',
+        marginBottom: '0.5rem'
+      }}>
+        Quick amounts:
+      </p>
+      <div style={{ 
+        display: 'flex', 
+        gap: '0.5rem',
+        flexWrap: 'wrap'
+      }}>
+        {uniqueSuggestions.map(amount => (
+          <button
+            key={amount}
+            type="button"
+            onClick={() => onSelectAmount(amount)}
+            style={{
+              padding: '0.5rem 1rem',
+              border: '2px solid var(--color-border)',
+              borderRadius: 'var(--radius-full)',
+              background: 'var(--color-white)',
+              color: 'var(--color-text-secondary)',
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              transition: 'all var(--transition)'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.borderColor = 'var(--color-gold)';
+              e.target.style.color = 'var(--color-gold)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.borderColor = 'var(--color-border)';
+              e.target.style.color = 'var(--color-text-secondary)';
+            }}
+          >
+            ${amount}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// 3. Enhanced Secure Payment Info
+const EnhancedSecurePaymentInfo = () => (
+  <div className="secure-payment-info" style={{ 
+    textAlign: 'center',
+    padding: '1rem',
+    background: 'var(--color-bg-primary)',
+    borderRadius: 'var(--radius-sm)',
+    marginTop: '1rem'
+  }}>
+    <div style={{ marginBottom: '0.5rem' }}>
+      <i className="fas fa-lock" style={{ marginRight: '0.5rem', color: 'var(--color-success)' }}></i>
+      <strong>256-bit SSL Encryption</strong>
+    </div>
+    <div style={{ 
+      fontSize: '0.875rem', 
+      color: 'var(--color-text-muted)',
+      display: 'flex',
+      justifyContent: 'center',
+      gap: '1rem',
+      flexWrap: 'wrap'
+    }}>
+      <span>🔒 Bank-level Security</span>
+      <span>💳 Stripe Protected</span>
+      <span>🛡️ Zero-storage Policy</span>
+    </div>
+  </div>
+);
+
+// 4. Enhanced Error Handling
+const EnhancedErrorHandling = {
+  getErrorMessage: (error) => {
+    const errorMessages = {
+      'card_declined': 'Your card was declined. Please try a different payment method or contact your bank.',
+      'insufficient_funds': 'Insufficient funds. Please try a different card or reduce the amount.',
+      'expired_card': 'Your card has expired. Please use a current card.',
+      'incorrect_cvc': 'The security code is incorrect. Please check the 3-4 digit code on your card.',
+      'processing_error': 'Payment processing temporarily unavailable. Please try again in a few moments.',
+      'invalid_number': 'Invalid card number. Please check and try again.',
+      'network_error': 'Connection problem. Please check your internet and try again.'
+    };
+    
+    return errorMessages[error.code] || error.message || 'An unexpected error occurred. Please try again.';
+  }
+};
+
+// ===== EXISTING UTILITY FUNCTIONS (KEEP AS IS) =====
+
 const validatePaymentForm = (amount, email) => {
   let errors = {};
   
@@ -83,7 +237,7 @@ const getStatusClass = (status) => {
   return '';
 };
 
-// Payment Form Component
+// ===== ENHANCED PAYMENT FORM COMPONENT =====
 const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
   const { createPaymentIntent } = useContext(ServiceContext);
   const navigate = useNavigate();
@@ -126,6 +280,14 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
     }
   };
 
+  // ENHANCED: Amount selection function
+  const handleAmountSelection = (selectedAmount) => {
+    setAmount(selectedAmount.toString());
+    if (formErrors.amount) {
+      setFormErrors({...formErrors, amount: null});
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -134,7 +296,7 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
       return;
     }
 
-      // Prevent double submission
+    // Prevent double submission
     if (loading) {
       console.log('Payment already in progress, ignoring duplicate submission');
       return;
@@ -184,7 +346,8 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
       });
   
       if (result.error) {
-        setCardError(getReadableErrorMessage(result.error));
+        // ENHANCED: Use enhanced error handling
+        setCardError(EnhancedErrorHandling.getErrorMessage(result.error));
         setProcessingStatus('Payment failed');
         setPaymentIntentStatus('failed');
       } else {
@@ -213,7 +376,7 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
             
           } catch (uiErr) {
             console.warn('Could not update UI with new funded amount:', uiErr);
-          }// This is fine - the webhook will handle the real update
+          }
           
           // Add a short delay to show the success message before redirecting
           setTimeout(() => {
@@ -270,8 +433,18 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit} className="payment-form">
+      {/* ENHANCED: Add Trust Indicators at the top */}
+      <TrustIndicators />
+
       <div className="form-group">
         <label htmlFor="amount">Contribution Amount ($)</label>
+        
+        {/* ENHANCED: Add Amount Suggestions */}
+        <AmountSuggestions 
+          remainingAmount={amountLeftToFund} 
+          onSelectAmount={handleAmountSelection} 
+        />
+        
         <input
           type="number"
           id="amount"
@@ -324,10 +497,25 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
             disabled={loading || isProcessingComplete} 
           />
         </div>
-        {cardError && <div className="card-error">{cardError}</div>}
+        
+        {/* ENHANCED: Better error display */}
+        {cardError && (
+          <div style={{
+            color: 'var(--color-error)',
+            background: '#fff0f0',
+            padding: '0.75rem',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--color-error)',
+            marginTop: '0.5rem',
+            fontSize: '0.9rem'
+          }}>
+            <i className="fas fa-exclamation-circle" style={{marginRight: '0.5rem'}}></i>
+            {cardError}
+          </div>
+        )}
       </div>
 
-      {/* Add status indicator */}
+      {/* ENHANCED: Better status indicator */}
       {processingStatus && (
         <div className={`payment-status ${statusClass}`}>
           <p>{processingStatus}</p>
@@ -354,14 +542,13 @@ const PaymentForm = ({ service, registrySlug, onPaymentSuccess }) => {
       {/* Display test cards in development mode */}
       <TestCards />
       
-      <div className="secure-payment-info">
-        <i className="fas fa-lock"></i> All payments are secure and encrypted
-      </div>
+      {/* ENHANCED: Replace basic secure info with enhanced version */}
+      <EnhancedSecurePaymentInfo />
     </form>
   );
 };
 
-// Main Contribution Component
+// ===== MAIN CONTRIBUTION COMPONENT (MOSTLY UNCHANGED) =====
 const Contribution = () => {
   const { getPublicService, service: initialService, loading: serviceLoading, error, clearErrors } = useContext(ServiceContext);
   const { serviceId } = useParams();

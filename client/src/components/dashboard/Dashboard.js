@@ -23,16 +23,37 @@ const Dashboard = () => {
     return <div className="loading-container"><div className="loading"></div></div>;
   }
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const getUserDisplayName = () => {
+    if (user?.firstName) {
+      return `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`;
+    }
+    return user?.email || '';
+  };
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p>Welcome{user ? `, ${user.firstName || user.email}` : ''}</p>
+        <h1>Your Service Registries</h1>
+        <p>
+          {getGreeting()}, {getUserDisplayName()}! 
+          {registries.length === 0 
+            ? ' Get started by creating your first registry.' 
+            : ` You have ${registries.length} ${registries.length === 1 ? 'registry' : 'registries'}.`
+          }
+        </p>
+        
         {user?.userType === 'admin' && (
           <div className="admin-section">
-            <h3>Admin Tools</h3>
+            <h3><i className="fas fa-crown"></i> Admin Tools</h3>
             <div className="admin-buttons">
-              <Link to="/admin" className="btn btn-secondary">
+              <Link to="/admin" className="btn btn-secondary btn-sm">
                 <i className="fas fa-cog"></i> Admin Panel
               </Link>
             </div>
@@ -40,18 +61,48 @@ const Dashboard = () => {
         )}
         
         <Link to="/create-registry" className="btn btn-primary">
-          <i className="fas fa-plus"></i> Create Registry
+          <i className="fas fa-plus"></i> Create New Registry
         </Link>
       </div>
 
       <div className="registries-container">
-        <h2>Your Registries</h2>
         {registries.length === 0 ? (
-          <p>You have no registries yet. Create one to get started!</p>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '3rem 2rem',
+            background: 'var(--color-white)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--color-border)',
+            boxShadow: 'var(--shadow-sm)'
+          }}>
+            <i className="fas fa-gift" style={{ 
+              fontSize: '3rem', 
+              color: 'var(--color-gold)', 
+              marginBottom: '1rem' 
+            }}></i>
+            <h2 style={{ marginBottom: '1rem', color: 'var(--color-text-primary)' }}>
+              Welcome to Servistry!
+            </h2>
+            <p style={{ 
+              color: 'var(--color-text-secondary)', 
+              marginBottom: '2rem', 
+              fontSize: '1.125rem' 
+            }}>
+              Create your first service registry and start receiving meaningful contributions from friends and family.
+            </p>
+            <Link to="/create-registry" className="btn btn-primary">
+              <i className="fas fa-rocket"></i> Create Your First Registry
+            </Link>
+          </div>
         ) : (
-          registries.map(registry => (
-            <RegistryItem key={registry._id} registry={registry} />
-          ))
+          <>
+            <h2>
+              <i className="fas fa-list-alt"></i> Active Registries
+            </h2>
+            {registries.map(registry => (
+              <RegistryItem key={registry._id} registry={registry} />
+            ))}
+          </>
         )}
       </div>
     </div>

@@ -22,6 +22,7 @@ app.use(cors({
     'http://localhost:3000',
     'https://theservistry.com',
     'https://servistry.vercel.app',
+    'https://bookish-space-xylophone-576qw65g6qv27qx5-3000.app.github.dev',
     process.env.FRONTEND_URL
   ],
   credentials: true

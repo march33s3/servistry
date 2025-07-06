@@ -8,6 +8,8 @@ const EditRegistry = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // LOCAL loading state for form submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: ''
@@ -35,6 +37,7 @@ const EditRegistry = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     const updatedRegistry = await updateRegistry(id, formData);
     
@@ -44,9 +47,11 @@ const EditRegistry = () => {
     } else {
       toast.error(error || 'Failed to update registry');
       clearErrors();
+      setIsSubmitting(false); // Reset on error
     }
   };
 
+  // Keep global loading for data fetching
   if (loading) {
     return <div className="loading-container"><div className="loading"></div></div>;
   }
@@ -56,7 +61,7 @@ const EditRegistry = () => {
       <h1>Edit Registry</h1>
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label htmlFor="title">Title</label>
+          <label htmlFor="title">Registry Title</label>
           <input
             type="text"
             name="title"
@@ -77,8 +82,19 @@ const EditRegistry = () => {
           ></textarea>
         </div>
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary">Update Registry</button>
-          <button type="button" className="btn btn-light" onClick={() => navigate(`/view-registry/${id}`)}>
+          <button 
+            type="submit" 
+            className={`btn btn-primary ${isSubmitting ? 'btn-loading' : ''}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Updating Registry...' : 'Update Registry'}
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-light" 
+            onClick={() => navigate(`/view-registry/${id}`)}
+            disabled={isSubmitting}
+          >
             Cancel
           </button>
         </div>

@@ -4,9 +4,13 @@ import { AuthContext } from '../../context/auth/AuthState';
 import { toast } from 'react-toastify';
 
 const Login = () => {
+  // REMOVED loading from context - only get what we need
   const { login, isAuthenticated, error, clearErrors } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // LOCAL loading state only
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -22,6 +26,7 @@ const Login = () => {
     if (error) {
       toast.error(error);
       clearErrors();
+      setIsSubmitting(false); // Reset local loading on error
     }
     // eslint-disable-next-line
   }, [isAuthenticated, error]);
@@ -30,16 +35,26 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    login({ email, password });
+    setIsSubmitting(true);
+    
+    try {
+      const success = await login({ email, password });
+      if (!success) {
+        setIsSubmitting(false);
+      }
+      // If success, user will be redirected via useEffect
+    } catch (err) {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-form-container">
-        <h1>Sign In</h1>
-        <p>Log in to manage your registries</p>
+        <h1>Welcome Back</h1>
+        <p>Sign in to manage your service registries</p>
         <form onSubmit={onSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
@@ -49,6 +64,7 @@ const Login = () => {
               id="email"
               value={email}
               onChange={onChange}
+              placeholder="Enter your email"
               required
             />
           </div>
@@ -60,16 +76,28 @@ const Login = () => {
               id="password"
               value={password}
               onChange={onChange}
+              placeholder="Enter your password"
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary btn-block">Sign In</button>
+          <button 
+            type="submit" 
+            className={`btn btn-primary btn-block ${isSubmitting ? 'btn-loading' : ''}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Signing In...' : 'Sign In'}
+          </button>
         </form>
+        
+        <div className="trust-indicator">
+          Your information is protected.
+        </div>
+        
         <p className="auth-link">
-          <Link to="/forgot-password">Forgot Password?</Link>
+          <Link to="/forgot-password">Forgot your password?</Link>
         </p>
         <p className="auth-link">
-          Don't have an account? <Link to="/register">Register</Link>
+          Don't have an account? <Link to="/register">Create Account</Link>
         </p>
       </div>
     </div>
