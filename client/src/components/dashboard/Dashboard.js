@@ -6,18 +6,20 @@ import RegistryItem from '../registry/RegistryItem';
 import { toast } from 'react-toastify';
 
 const Dashboard = () => {
-  const { user } = useContext(AuthContext);
+  const { user, isAuthenticated  } = useContext(AuthContext);
   const { registries, getUserRegistries, loading, error, clearErrors } = useContext(RegistryContext);
 
   useEffect(() => {
+  if (isAuthenticated) {
     getUserRegistries();
+  }
 
     if (error) {
       toast.error(error);
       clearErrors();
     }
     // eslint-disable-next-line
-  }, [error]);
+  }, [error, isAuthenticated]);
 
   if (loading) {
     return <div className="loading-container"><div className="loading"></div></div>;

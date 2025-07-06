@@ -45,6 +45,7 @@ app.get('/api/test-webhook', (req, res) => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/category', require('./routes/category'));
 app.use('/api/registry', require('./routes/registry'));
 app.use('/api/service', require('./routes/service'));
 app.use('/api/payment', require('./routes/payment'));

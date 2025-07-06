@@ -24,7 +24,10 @@ const transporter = nodemailer.createTransport({
 router.post('/', [
   auth,
   body('title').notEmpty().withMessage('Title is required'),
-  body('description').notEmpty().withMessage('Description is required')
+  body('description').notEmpty().withMessage('Description is required'),
+  body('category').notEmpty().withMessage('Category is required'),
+  body('emotionalResponse').notEmpty().withMessage('Emotional response is required'),
+  body('categoryResponse').notEmpty().withMessage('Category response is required')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -32,7 +35,21 @@ router.post('/', [
   }
 
   try {
-    const { title, description } = req.body;
+    const { 
+      title,
+      description, 
+      category, 
+      emotionalResponse, 
+      categoryResponse,
+      emotionalResponseOther,
+      categoryResponseOther  
+    } = req.body;
+
+    // Verify category exists
+    const categoryDoc = await Category.findById(category);
+    if (!categoryDoc) {
+      return res.status(400).json({ msg: 'Invalid category' });
+    }
 
     // Create slug from title
     let urlSlug = slugify(title, {
@@ -56,27 +73,18 @@ router.post('/', [
       user: req.user.id,
       title,
       description,
-      urlSlug: newSlug
+      urlSlug: newSlug,
+      category,
+      emotionalResponse,
+      categoryResponse,
+      emotionalResponseOther,
+      categoryResponseOther
     });
 
     const savedRegistry = await registry.save();
 
-    // Send confirmation email
-    const user = await User.findById(req.user.id);
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: user.email,
-      subject: 'Registry Created Successfully',
-      text: `Congratulations! Your registry "${title}" has been created successfully. You can share it with others using this link: ${process.env.FRONTEND_URL}/registry/${newSlug}`
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log('Email sent: ' + info.response);
-      }
-    });
+    // Send personalized confirmation email based on responses
+    await sendPersonalizedWelcomeEmail(user, savedRegistry, categoryDoc);
 
     res.json(savedRegistry);
   } catch (err) {
