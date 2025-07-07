@@ -4,7 +4,7 @@ import axios from 'axios';
 const getApiUrl = () => {
   // Check if we're in development
   if (process.env.NODE_ENV === 'development') {
-    return process.env.REACT_APP_API_URL || 'https://stunning-fishstick-576qw65g6r92p47v-5000.app.github.dev/';
+    return process.env.REACT_APP_API_URL || 'https://bookish-space-xylophone-576qw65g6qv27qx5-5000.app.github.dev/';
   }
   
   // Production environment

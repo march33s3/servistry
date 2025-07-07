@@ -8,6 +8,8 @@ const CreateService = () => {
   const { registryId } = useParams();
   const navigate = useNavigate();
 
+  // LOCAL loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -28,6 +30,7 @@ const CreateService = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     const serviceData = {
       ...formData,
@@ -42,6 +45,7 @@ const CreateService = () => {
     } else {
       toast.error(error || 'Failed to add service');
       clearErrors();
+      setIsSubmitting(false); // Reset on error
     }
   };
 
@@ -50,13 +54,14 @@ const CreateService = () => {
       <h1>Add Service</h1>
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label htmlFor="title">Title</label>
+          <label htmlFor="title">Service Title</label>
           <input
             type="text"
             name="title"
             id="title"
             value={title}
             onChange={onChange}
+            placeholder="e.g., House Cleaning, Meal Delivery, Pet Sitting"
             required
           />
         </div>
@@ -67,23 +72,24 @@ const CreateService = () => {
             id="description"
             value={description}
             onChange={onChange}
+            placeholder="Describe what this service provides and why it would be helpful..."
             required
           ></textarea>
         </div>
         <div className="form-group">
-          <label htmlFor="link">Link to Service</label>
+          <label htmlFor="link">Service Link</label>
           <input
             type="url"
             name="link"
             id="link"
             value={link}
             onChange={onChange}
-            placeholder="https://example.com"
+            placeholder="https://example.com/service"
             required
           />
         </div>
         <div className="form-group">
-          <label htmlFor="requestedAmount">Requested Amount ($)</label>
+          <label htmlFor="requestedAmount">Funding Goal ($)</label>
           <input
             type="number"
             name="requestedAmount"
@@ -92,16 +98,32 @@ const CreateService = () => {
             onChange={onChange}
             min="0"
             step="0.01"
+            placeholder="100.00"
             required
           />
         </div>
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary">Add Service</button>
-          <button type="button" className="btn btn-light" onClick={() => navigate(`/view-registry/${registryId}`)}>
+          <button 
+            type="submit" 
+            className={`btn btn-primary ${isSubmitting ? 'btn-loading' : ''}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Adding Service...' : 'Add Service'}
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-light" 
+            onClick={() => navigate(`/view-registry/${registryId}`)}
+            disabled={isSubmitting}
+          >
             Cancel
           </button>
         </div>
       </form>
+      
+      <div className="trust-indicator">
+        Services are added to your private registry until you share it
+      </div>
     </div>
   );
 };

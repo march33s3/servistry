@@ -22,6 +22,7 @@ app.use(cors({
     'http://localhost:3000',
     'https://theservistry.com',
     'https://servistry.vercel.app',
+    'https://bookish-space-xylophone-576qw65g6qv27qx5-3000.app.github.dev',
     process.env.FRONTEND_URL
   ],
   credentials: true
@@ -44,6 +45,7 @@ app.get('/api/test-webhook', (req, res) => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/category', require('./routes/category'));
 app.use('/api/registry', require('./routes/registry'));
 app.use('/api/service', require('./routes/service'));
 app.use('/api/payment', require('./routes/payment'));

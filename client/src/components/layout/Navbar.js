@@ -12,16 +12,20 @@ const Navbar = () => {
   const authLinks = (
     <ul>
       <li>
-        <Link to="/dashboard">Dashboard</Link>
+        <Link to="/dashboard">
+          <i className="fas fa-tachometer-alt"></i> Dashboard
+        </Link>
       </li>
-      {user?.email === process.env.REACT_APP_ADMIN_EMAIL && (
+      {user?.userType === 'admin' && (
         <li>
-          <Link to="/admin">Admin</Link>
+          <Link to="/admin">
+            <i className="fas fa-cog"></i> Admin
+          </Link>
         </li>
-    )}
+      )}
       <li>
-        <a href="#!" onClick={onLogout}>
-          <i className="fas fa-sign-out-alt"></i> <span>Logout</span>
+        <a href="#!" onClick={onLogout} className="btn btn-secondary btn-sm">
+          <i className="fas fa-sign-out-alt"></i> Logout
         </a>
       </li>
     </ul>
@@ -30,10 +34,14 @@ const Navbar = () => {
   const guestLinks = (
     <ul>
       <li>
-        <Link to="/register">Register</Link>
+        <Link to="/register" className="btn btn-secondary btn-sm">
+          <i className="fas fa-user-plus"></i> Register
+        </Link>
       </li>
       <li>
-        <Link to="/login">Login</Link>
+        <Link to="/login" className="btn btn-primary btn-sm">
+          <i className="fas fa-sign-in-alt"></i> Login
+        </Link>
       </li>
     </ul>
   );
@@ -43,7 +51,7 @@ const Navbar = () => {
       <div className="navbar-container">
         <h1>
           <Link to="/">
-            <i className="fas fa-gift"></i> Servistry
+            Servistry
           </Link>
         </h1>
         {isAuthenticated ? authLinks : guestLinks}

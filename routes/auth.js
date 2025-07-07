@@ -5,9 +5,14 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const Registry = require('../models/Registry');
+const Category = require('../models/Category');
 const auth = require('../middleware/auth');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const slugify = require('slugify'); 
+const { sendPersonalizedWelcomeEmail } = require('../utils/emailService');
+
 
 // Setup email transporter
 const transporter = nodemailer.createTransport({
@@ -15,6 +20,115 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USERNAME,
     pass: process.env.EMAIL_PASSWORD
+  }
+});
+
+// @route   POST api/auth/register-with-registry
+// @desc    Register user and create registry in one step
+// @access  Public
+router.post('/register-with-registry', [
+  body('firstName').notEmpty().withMessage('First name is required'),
+  body('lastName').notEmpty().withMessage('Last name is required'),
+  body('email').isEmail().withMessage('Please include a valid email'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('title').notEmpty().withMessage('Registry title is required'),
+  body('description').notEmpty().withMessage('Registry description is required'),
+  body('selectedCategory').notEmpty().withMessage('Category is required'),
+  body('emotionalResponse').notEmpty().withMessage('Emotional response is required'),
+  body('categoryResponse').notEmpty().withMessage('Category response is required')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const {
+    firstName, lastName, email, password,
+    title, description, selectedCategory,
+    emotionalResponse, categoryResponse,
+    emotionalResponseOther, categoryResponseOther
+  } = req.body;
+
+  console.log('Register with registry request:', { firstName, lastName, email, title, categoryId: selectedCategory._id });
+
+  try {
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ msg: 'User already exists' });
+    }
+
+    // Create user
+    user = new User({
+      firstName,
+      lastName,
+      email,
+      password,
+      userType: ''
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    await user.save();
+    console.log('User created:', user._id);
+
+    // Create registry slug
+    let urlSlug = slugify(title, { lower: true, strict: true });
+    let slugExists = await Registry.findOne({ urlSlug });
+    let counter = 1;
+    let newSlug = urlSlug;
+    while (slugExists) {
+      newSlug = `${urlSlug}-${counter}`;
+      slugExists = await Registry.findOne({ urlSlug: newSlug });
+      counter++;
+    }
+
+    // Create registry
+    const registry = new Registry({
+      user: user._id,
+      title,
+      description,
+      urlSlug: newSlug,
+      category: selectedCategory._id,
+      emotionalResponse,
+      categoryResponse,
+      emotionalResponseOther: emotionalResponseOther || null,
+      categoryResponseOther: categoryResponseOther || null
+    });
+
+    await registry.save();
+    console.log('Registry created:', registry._id);
+
+    // Create JWT token
+    const payload = { user: { id: user._id } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    // Send welcome email (optional, can be async)
+    try {
+      const category = await Category.findById(selectedCategory._id);
+      await sendPersonalizedWelcomeEmail(user, registry, category);
+    } catch (emailError) {
+      console.log('Email sending failed, but continuing:', emailError.message);
+    }
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email
+      },
+      registry: {
+        _id: registry._id,
+        title: registry.title,
+        urlSlug: registry.urlSlug
+      }
+    });
+
+  } catch (err) {
+    console.error('Registration error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -87,6 +201,103 @@ router.post('/register', [
         res.json({ token });
       }
     );
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// routes/auth.js - Add this new route
+router.post('/register-with-registry', [
+  body('firstName').notEmpty().withMessage('First name is required'),
+  body('lastName').notEmpty().withMessage('Last name is required'),
+  body('email').isEmail().withMessage('Please include a valid email'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('title').notEmpty().withMessage('Registry title is required'),
+  body('description').notEmpty().withMessage('Registry description is required'),
+  body('selectedCategory').notEmpty().withMessage('Category is required'),
+  body('emotionalResponse').notEmpty().withMessage('Emotional response is required'),
+  body('categoryResponse').notEmpty().withMessage('Category response is required')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const {
+    firstName, lastName, email, password,
+    title, description, selectedCategory,
+    emotionalResponse, categoryResponse,
+    emotionalResponseOther, categoryResponseOther
+  } = req.body;
+
+  try {
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ msg: 'User already exists' });
+    }
+
+    // Create user
+    user = new User({
+      firstName,
+      lastName,
+      email,
+      password,
+      userType: ''
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    await user.save();
+
+    // Create registry
+    let urlSlug = slugify(title, { lower: true, strict: true });
+    let slugExists = await Registry.findOne({ urlSlug });
+    let counter = 1;
+    let newSlug = urlSlug;
+    while (slugExists) {
+      newSlug = `${urlSlug}-${counter}`;
+      slugExists = await Registry.findOne({ urlSlug: newSlug });
+      counter++;
+    }
+
+    const registry = new Registry({
+      user: user.id,
+      title,
+      description,
+      urlSlug: newSlug,
+      category: selectedCategory._id,
+      emotionalResponse,
+      categoryResponse,
+      emotionalResponseOther,
+      categoryResponseOther
+    });
+
+    await registry.save();
+
+    // Create JWT token
+    const payload = { user: { id: user.id } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    // Send welcome email
+    await sendPersonalizedWelcomeEmail(user, registry, selectedCategory);
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email
+      },
+      registry: {
+        _id: registry._id,
+        title: registry.title,
+        urlSlug: registry.urlSlug
+      }
+    });
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

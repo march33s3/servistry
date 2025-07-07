@@ -1,4 +1,4 @@
-import React, { createContext, useReducer } from 'react';
+import React, { createContext, useReducer, useEffect } from 'react';
 import axios from 'axios';
 import authReducer from './authReducer';
 import setAuthToken from '../../utils/setAuthToken';
@@ -9,12 +9,17 @@ export const AuthProvider = ({ children }) => {
   const initialState = {
     token: localStorage.getItem('token'),
     isAuthenticated: null,
-    loading: true,
+    loading: true, // Start as true while checking authentication
     user: null,
     error: null
   };
 
   const [state, dispatch] = useReducer(authReducer, initialState);
+
+  // Load User on mount
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   // Load User
   const loadUser = async () => {
@@ -30,6 +35,7 @@ export const AuthProvider = ({ children }) => {
         payload: res.data
       });
     } catch (err) {
+      console.error('Auth check failed:', err);
       dispatch({
         type: 'AUTH_ERROR'
       });
@@ -53,11 +59,14 @@ export const AuthProvider = ({ children }) => {
       });
 
       loadUser();
+      return true; // Return success
     } catch (err) {
+      console.error('Registration failed:', err);
       dispatch({
         type: 'REGISTER_FAIL',
-        payload: err.response.data.msg
+        payload: err.response?.data?.msg || 'Registration failed'
       });
+      return false; // Return failure
     }
   };
 
@@ -78,11 +87,14 @@ export const AuthProvider = ({ children }) => {
       });
 
       loadUser();
+      return true; // Return success
     } catch (err) {
+      console.error('Login failed:', err);
       dispatch({
         type: 'LOGIN_FAIL',
-        payload: err.response.data.msg
+        payload: err.response?.data?.msg || 'Login failed'
       });
+      return false; // Return failure
     }
   };
 
@@ -103,9 +115,10 @@ export const AuthProvider = ({ children }) => {
 
       return true;
     } catch (err) {
+      console.error('Forgot password failed:', err);
       dispatch({
         type: 'FORGOT_PASSWORD_FAIL',
-        payload: err.response.data.msg
+        payload: err.response?.data?.msg || 'Failed to send reset email'
       });
       return false;
     }
@@ -128,16 +141,19 @@ export const AuthProvider = ({ children }) => {
 
       return true;
     } catch (err) {
+      console.error('Reset password failed:', err);
       dispatch({
         type: 'RESET_PASSWORD_FAIL',
-        payload: err.response.data.msg
+        payload: err.response?.data?.msg || 'Failed to reset password'
       });
       return false;
     }
   };
 
   // Logout
-  const logout = () => dispatch({ type: 'LOGOUT' });
+  const logout = () => {
+    dispatch({ type: 'LOGOUT' });
+  };
 
   // Clear Errors
   const clearErrors = () => dispatch({ type: 'CLEAR_ERRORS' });

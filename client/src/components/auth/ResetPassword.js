@@ -8,11 +8,12 @@ const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
 
+  // LOCAL loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
   });
-
   const [reset, setReset] = useState(false);
 
   const { password, confirmPassword } = formData;
@@ -26,19 +27,23 @@ const ResetPassword = () => {
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    const success = await resetPassword(password, token);
+    
+    if (success) {
+      setReset(true);
+      toast.success('Password reset successful');
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
     } else {
-      const success = await resetPassword(password, token);
-      
-      if (success) {
-        setReset(true);
-        toast.success('Password reset successful');
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
-      } else {
-        toast.error(error || 'Failed to reset password');
-        clearErrors();
-      }
+      toast.error(error || 'Failed to reset password');
+      clearErrors();
+      setIsSubmitting(false); // Reset on error
     }
   };
 
@@ -88,8 +93,18 @@ const ResetPassword = () => {
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary btn-block">Reset Password</button>
+          <button 
+            type="submit" 
+            className={`btn btn-primary btn-block ${isSubmitting ? 'btn-loading' : ''}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Resetting Password...' : 'Reset Password'}
+          </button>
         </form>
+        
+        <div className="trust-indicator">
+          Your password is secured with bank-level encryption
+        </div>
       </div>
     </div>
   );

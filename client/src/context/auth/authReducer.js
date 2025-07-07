@@ -4,7 +4,7 @@ export default (state, action) => {
       return {
         ...state,
         isAuthenticated: true,
-        loading: false,
+        loading: false, // IMPORTANT: Set loading to false
         user: action.payload
       };
     case 'REGISTER_SUCCESS':
@@ -14,7 +14,8 @@ export default (state, action) => {
         ...state,
         token: action.payload.token,
         isAuthenticated: true,
-        loading: false
+        loading: false, // IMPORTANT: Set loading to false
+        error: null // Clear any previous errors
       };
     case 'REGISTER_FAIL':
     case 'AUTH_ERROR':
@@ -25,7 +26,7 @@ export default (state, action) => {
         ...state,
         token: null,
         isAuthenticated: false,
-        loading: false,
+        loading: false, // IMPORTANT: Set loading to false
         user: null,
         error: action.payload
       };
@@ -33,12 +34,14 @@ export default (state, action) => {
     case 'RESET_PASSWORD_SUCCESS':
       return {
         ...state,
+        loading: false, // IMPORTANT: Set loading to false
         error: null
       };
     case 'FORGOT_PASSWORD_FAIL':
     case 'RESET_PASSWORD_FAIL':
       return {
         ...state,
+        loading: false, // IMPORTANT: Set loading to false
         error: action.payload
       };
     case 'CLEAR_ERRORS':

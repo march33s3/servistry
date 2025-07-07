@@ -5,7 +5,9 @@ import { toast } from 'react-toastify';
 
 const ForgotPassword = () => {
   const { forgotPassword, error, clearErrors } = useContext(AuthContext);
-
+  
+  // LOCAL loading state instead of global
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
 
@@ -15,6 +17,7 @@ const ForgotPassword = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     const success = await forgotPassword(email);
     
@@ -24,6 +27,7 @@ const ForgotPassword = () => {
     } else {
       toast.error(error || 'Failed to send reset email');
       clearErrors();
+      setIsSubmitting(false); // Reset on error
     }
   };
 
@@ -60,11 +64,21 @@ const ForgotPassword = () => {
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary btn-block">Send Reset Link</button>
+          <button 
+            type="submit" 
+            className={`btn btn-primary btn-block ${isSubmitting ? 'btn-loading' : ''}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+          </button>
         </form>
         <p className="auth-link">
           <Link to="/login">Back to Login</Link>
         </p>
+        
+        <div className="trust-indicator">
+          Your information is protected with bank-level security
+        </div>
       </div>
     </div>
   );
