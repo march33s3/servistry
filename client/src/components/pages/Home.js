@@ -49,17 +49,19 @@ const Home = () => {
         <div className="feature">
           <i className="fas fa-clipboard-list"></i>
           <h3>Create</h3>
+          <p>Build a registry for the services you truly need.</p>
           
         </div>
         <div className="feature">
           <i className="fas fa-share-alt"></i>
           <h3>Share</h3>
+          <p>Invite friends and family to contribute with ease.</p>
           
         </div>
         <div className="feature">
           <i className="fas fa-credit-card"></i>
-          <h3>Contribute</h3>
-          
+          <h3>Enjoy</h3>
+          <p>Feel the difference service-based support makes.</p>
         </div>
       </div>
 
