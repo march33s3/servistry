@@ -1,7 +1,11 @@
 // scripts/seedCategories.js
 const mongoose = require('mongoose');
 const Category = require('../models/Category');
-require('dotenv').config();
+
+// Only load dotenv if running as standalone script
+if (require.main === module) {
+  require('dotenv').config();
+}
 
 const categories = [
   {
@@ -216,59 +220,82 @@ const categories = [
   }
 ];
 
-const seedCategories = async () => {
+const seedCategories = async (standalone = true) => {
+  let shouldCloseConnection = false;
+
   try {
-    console.log('Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('Connected to MongoDB successfully');
+    // Determine if we need to manage the connection
+    const isConnected = mongoose.connection.readyState === 1;
+    
+    // Only connect if we're running standalone or if mongoose isn't already connected
+    if (!isConnected) {
+      console.log('🔗 Connecting to MongoDB...');
+      await mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      console.log('✅ Connected to MongoDB successfully');
+      shouldCloseConnection = standalone; // Only close if we opened it and running standalone
+    }
 
-    console.log('Clearing existing categories...');
+    console.log('🗑️ Clearing existing categories...');
     const deleteResult = await Category.deleteMany({});
-    console.log(`Deleted ${deleteResult.deletedCount} existing categories`);
+    console.log(`🗑️ Deleted ${deleteResult.deletedCount} existing categories`);
 
-    console.log('Inserting new categories...');
+    console.log('📝 Inserting new categories...');
     const insertResult = await Category.insertMany(categories);
-    console.log(`Successfully inserted ${insertResult.length} categories:`);
+    console.log(`✅ Successfully inserted ${insertResult.length} categories:`);
     
     insertResult.forEach(category => {
       console.log(`  ✓ ${category.icon} ${category.name} (${category.slug})`);
     });
 
     console.log('\n🎉 Categories seeded successfully!');
-    console.log('\nAvailable categories:');
-    categories.forEach(cat => {
-      console.log(`${cat.icon} ${cat.name} - ${cat.description}`);
-    });
 
   } catch (error) {
     console.error('❌ Error seeding categories:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('📍 Stack trace:', error.stack);
+    
+    if (standalone) {
+      process.exit(1);
+    } else {
+      throw error; // Re-throw for the calling function to handle
+    }
   } finally {
-    await mongoose.connection.close();
-    console.log('\nDatabase connection closed');
-    process.exit(0);
+    if (shouldCloseConnection) {
+      await mongoose.connection.close();
+      console.log('\n🔌 Database connection closed');
+      if (standalone) {
+        process.exit(0);
+      }
+    }
   }
 };
 
-// Handle process termination gracefully
-process.on('SIGINT', async () => {
-  console.log('\n⚠️  Process interrupted. Closing database connection...');
-  await mongoose.connection.close();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  console.log('\n⚠️  Process terminated. Closing database connection...');
-  await mongoose.connection.close();
-  process.exit(0);
-});
-
-// Run the seeding function
+// Handle process termination gracefully (only when running standalone)
 if (require.main === module) {
-  seedCategories();
+  process.on('SIGINT', async () => {
+    console.log('\n⚠️  Process interrupted. Closing database connection...');
+    try {
+      await mongoose.connection.close();
+    } catch (err) {
+      console.error('Error closing connection:', err);
+    }
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', async () => {
+    console.log('\n⚠️  Process terminated. Closing database connection...');
+    try {
+      await mongoose.connection.close();
+    } catch (err) {
+      console.error('Error closing connection:', err);
+    }
+    process.exit(0);
+  });
+
+  // Run the seeding function in standalone mode
+  seedCategories(true);
 }
 
 module.exports = { categories, seedCategories };

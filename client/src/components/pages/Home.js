@@ -3,76 +3,69 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/auth/AuthState';
 
 const Home = () => {
-  const { isAuthenticated } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { isAuthenticated, user } = useContext(AuthContext);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-    // eslint-disable-next-line
-  }, [isAuthenticated]);
-
-  return (
+    return (
     <div className="home-container">
       <div className="home-content">
-        <h1>Welcome to Servistry</h1>
-        <p className="lead">
-          The trusted platform for service-based registries. Get the help you really need from the people who care about you.
-        </p>
-        <div className="home-buttons">
-          <Link to="/register" className="btn btn-primary">
-            <i className="fas fa-rocket"></i> Create Your Registry
-          </Link>
-          <Link to="/login" className="btn btn-secondary">
-            <i className="fas fa-sign-in-alt"></i> Sign In
-          </Link>
-        </div>
-        
-        {/* Trust Indicators */}
-        <div style={{ 
-          marginTop: '2rem',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '2rem',
-          flexWrap: 'wrap',
-          fontSize: '0.875rem',
-          color: 'var(--color-text-muted)'
-        }}>
-          <span>
-            <i className="fas fa-shield-alt" style={{ color: 'var(--color-success)', marginRight: '0.5rem' }}></i>
-            Secure & Trusted
-          </span>
-          <span>
-            <i className="fas fa-users" style={{ color: 'var(--color-gold)', marginRight: '0.5rem' }}></i>
-            Thousands of Users
-          </span>
-          <span>
-            <i className="fas fa-lock" style={{ color: 'var(--color-success)', marginRight: '0.5rem' }}></i>
-            Privacy Protected
-          </span>
-        </div>
+        {isAuthenticated ? (
+          // Personalized content for logged-in users
+          <>
+            <h1>Welcome back, {user?.firstName}! </h1>
+            <p className="lead">
+              Ready to manage your registries or create a new one?
+            </p>
+            <div className="home-buttons">
+              <Link to="/dashboard" className="btn btn-primary">
+                <i className="fas fa-tachometer-alt"></i> Go to Dashboard
+              </Link>
+              <Link to="/create-registry" className="btn btn-secondary">
+                <i className="fas fa-plus"></i> Create New Registry
+              </Link>
+            </div>
+            
+          </>
+        ) : (
+          // Original content for guest users
+          <>
+            <h1>Welcome to Servistry</h1>
+            <p className="lead">
+              The trusted platform for service-based registries. Get the help you really need from the people who care about you.
+            </p>
+            <div className="home-buttons">
+              <Link to="/register" className="btn btn-primary">
+                <i className="fas fa-rocket"></i> Create Your Registry
+              </Link>
+              <Link to="/login" className="btn btn-secondary">
+                <i className="fas fa-sign-in-alt"></i> Sign In
+              </Link>
+            </div>
+          </>
+        )}
       </div>
 
+      {/* Features section - show for all users */}
       <div className="home-features">
         <div className="feature">
           <i className="fas fa-clipboard-list"></i>
-          <h3>Create Service Registries</h3>
-          <p>Build registries for services you actually need - from house cleaning to meal delivery, tutoring to pet care.</p>
+          <h3>Create</h3>
+          <p>Build a registry for the services you truly need.</p>
+          
         </div>
         <div className="feature">
           <i className="fas fa-share-alt"></i>
-          <h3>Share Securely</h3>
-          <p>Share your registry with a simple, secure link. Friends and family can contribute safely through our trusted platform.</p>
+          <h3>Share</h3>
+          <p>Invite friends and family to contribute with ease.</p>
+          
         </div>
         <div className="feature">
           <i className="fas fa-credit-card"></i>
-          <h3>Protected Payments</h3>
-          <p>All contributions are processed through Stripe's bank-level security. Your financial information is never stored.</p>
+          <h3>Enjoy</h3>
+          <p>Feel the difference service-based support makes.</p>
         </div>
       </div>
 
-      {/* How It Works Section */}
+      {/* How It Works Section - show for all users */}
       <div style={{ 
         marginTop: '4rem',
         background: 'var(--color-white)',
@@ -171,7 +164,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section - keep for all users */}
       <div style={{ marginTop: '4rem' }}>
         <h2 style={{ 
           textAlign: 'center', 
@@ -306,7 +299,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* CTA Section */}
+      {/* CTA Section - different for authenticated vs guest users */}
       <div style={{
         marginTop: '4rem',
         background: 'linear-gradient(135deg, var(--color-bg-mint), #dff0ed)',
@@ -315,34 +308,66 @@ const Home = () => {
         textAlign: 'center',
         border: '1px solid var(--color-border)'
       }}>
-        <h2 style={{ 
-          marginBottom: '1rem',
-          fontFamily: 'var(--font-heading)',
-          color: 'var(--color-text-primary)'
-        }}>
-          Ready to Get Started?
-        </h2>
-        <p style={{ 
-          fontSize: '1.125rem',
-          color: 'var(--color-text-secondary)',
-          marginBottom: '2rem',
-          maxWidth: '500px',
-          margin: '0 auto 2rem'
-        }}>
-          Join thousands of families who've discovered a better way to ask for and give meaningful help.
-        </p>
-        <Link to="/register" className="btn btn-primary" style={{ 
-          fontSize: '1.125rem',
-          padding: '1rem 2rem'
-        }}>
-          <i className="fas fa-rocket"></i> Create Your Free Registry
-        </Link>
+        {isAuthenticated ? (
+          <>
+            <h2 style={{ 
+              marginBottom: '1rem',
+              fontFamily: 'var(--font-heading)',
+              color: 'var(--color-text-primary)'
+            }}>
+              Ready to Create Another Registry?
+            </h2>
+            <p style={{ 
+              fontSize: '1.125rem',
+              color: 'var(--color-text-secondary)',
+              marginBottom: '2rem',
+              maxWidth: '500px',
+              margin: '0 auto 2rem'
+            }}>
+              Continue helping your family and friends support you with the services you need most.
+            </p>
+            <Link to="/create-registry" className="btn btn-primary" style={{ 
+              fontSize: '1.125rem',
+              padding: '1rem 2rem'
+            }}>
+              <i className="fas fa-plus"></i> Create New Registry
+            </Link>
+          </>
+        ) : (
+          <>
+            <h2 style={{ 
+              marginBottom: '1rem',
+              fontFamily: 'var(--font-heading)',
+              color: 'var(--color-text-primary)'
+            }}>
+              Ready to Get Started?
+            </h2>
+            <p style={{ 
+              fontSize: '1.125rem',
+              color: 'var(--color-text-secondary)',
+              marginBottom: '2rem',
+              maxWidth: '500px',
+              margin: '0 auto 2rem'
+            }}>
+              Join thousands of families who've discovered a better way to ask for and give meaningful help.
+            </p>
+            <Link to="/register" className="btn btn-primary" style={{ 
+              fontSize: '1.125rem',
+              padding: '1rem 2rem'
+            }}>
+              <i className="fas fa-rocket"></i> Create Your Free Registry
+            </Link>
+          </>
+        )}
         <div style={{ 
           marginTop: '1rem',
           fontSize: '0.875rem',
           color: 'var(--color-text-muted)'
         }}>
-          No credit card required • Free to start • Secure & private
+          {isAuthenticated ? 
+            'Always free • Secure & private • Trusted platform' : 
+            'No credit card required • Free to start • Secure & private'
+          }
         </div>
       </div>
     </div>

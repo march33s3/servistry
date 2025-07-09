@@ -14,7 +14,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-
 app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
 
 app.use(cors({
@@ -34,9 +33,46 @@ mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => {
+  console.log('✅ MongoDB connected');
+  
+  // Auto-seed categories on startup
+  autoSeedCategories();
+})
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
+// Auto-seeding function
+function autoSeedCategories() {
+  const Category = require('./models/Category');
+  
+  // Check if categories already exist
+  Category.countDocuments()
+    .then(existingCategories => {
+      if (existingCategories === 0) {
+        console.log('🌱 No categories found, auto-seeding...');
+        
+        // Import and run the seeding function
+        const { seedCategories } = require('./scripts/seedCategories');
+        return seedCategories(false); // false = don't close connection
+      } else {
+        console.log(`📊 Found ${existingCategories} existing categories, skipping auto-seed`);
+        return Promise.resolve();
+      }
+    })
+    .then(() => {
+      console.log('✅ Auto-seeding completed successfully');
+    })
+    .catch(error => {
+      console.error('❌ Auto-seeding failed:', error.message);
+      
+      // Don't crash the server if seeding fails
+      if (process.env.NODE_ENV === 'production') {
+        console.error('🚨 Production auto-seed failed - server continuing anyway');
+      } else {
+        console.error('🛠️ Development auto-seed failed - check your database connection');
+      }
+    });
+}
 
 app.get('/api/test-webhook', (req, res) => {
   console.log('Test endpoint hit');
@@ -57,4 +93,7 @@ app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Server error', error: err.message });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+});
