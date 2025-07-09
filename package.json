@@ -12,7 +12,8 @@
     "dev:backend": "npm run server",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client",
     "seed:categories": "node scripts/seedCategories.js",
-    "seed:dev": "NODE_ENV=development node scripts/seedCategories.js"
+    "seed:dev": "cross-env NODE_ENV=development node scripts/seedCategories.js",
+    "seed:prod": "cross-env NODE_ENV=production node scripts/seedCategories.js"
   },
   "author": "",
   "license": "MIT",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
     "nodemon": "^2.0.20"
   }
 }

@@ -35,7 +35,42 @@ mongoose.connect(process.env.MONGO_URI, {
   useUnifiedTopology: true,
 })
 .then(() => console.log('MongoDB connected'))
+
+  // Auto-seed categories on startup
+  await autoSeedCategories();
+})
 .catch(err => console.error('MongoDB connection error:', err));
+
+// Auto-seeding function
+async function autoSeedCategories() {
+  try {
+    const Category = require('./models/Category');
+    
+    // Check if categories already exist
+    const existingCategories = await Category.countDocuments();
+    
+    if (existingCategories === 0) {
+      console.log('🌱 No categories found, auto-seeding...');
+      
+      // Import and run the seeding function
+      const { seedCategories } = require('./scripts/seedCategories');
+      await seedCategories();
+      
+      console.log('✅ Auto-seeding completed successfully');
+    } else {
+      console.log(`📊 Found ${existingCategories} existing categories, skipping auto-seed`);
+    }
+  } catch (error) {
+    console.error('❌ Auto-seeding failed:', error.message);
+    
+    // Don't crash the server if seeding fails
+    if (process.env.NODE_ENV === 'production') {
+      console.error('🚨 Production auto-seed failed - server continuing anyway');
+    } else {
+      console.error('🛠️ Development auto-seed failed - check your database connection');
+    }
+  }
+}
 
 
 app.get('/api/test-webhook', (req, res) => {
